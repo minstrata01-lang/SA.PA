@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin-login
+Disallow: /admin/login
+Disallow: /payment/
+Disallow: /preassessment/form
+Disallow: /preassessment/review-confirmation
+Disallow: /waiting
+Disallow: /join
+Disallow: /session-used
+Disallow: /session-pending
+Disallow: /session-expired
+Disallow: /session-invalid
+
+Sitemap: https://sapa.stratalift.co.id/sitemap.xml

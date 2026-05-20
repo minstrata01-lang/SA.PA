@@ -1,0 +1,283 @@
+/* Google Fonts dimuat via <link> di index.html (lebih cepat dari @import) */
+@import "tailwindcss";
+
+@keyframes navPop {
+    0%   { opacity: 0; transform: translateY(-24px) scale(0.85); }
+    60%  { opacity: 1; transform: translateY(4px)  scale(1.03); }
+    80%  { transform: translateY(-2px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes runLight {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+}
+
+@keyframes rotateBorderLight {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes dropBounce {
+    0% {
+        transform: translateY(-100%) translateZ(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(8px) translateZ(0);
+    }
+    100% {
+        transform: translateY(0) translateZ(0);
+        opacity: 1;
+    }
+}
+
+@keyframes closeBounce {
+    0% {
+        transform: translateY(0) translateZ(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-8px) translateZ(0);
+    }
+    100% {
+        transform: translateY(-100%) translateZ(0);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.page-fade-in {
+    animation: pageFadeIn 0.3s ease forwards;
+}
+
+@layer utilities {
+    .animate-drop-bounce {
+        animation: dropBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-close-bounce {
+        animation: closeBounce 0.5s cubic-bezier(0.64, 0, 0.78, 0) forwards;
+    }
+
+    .animate-nav-pop {
+        animation: navPop 0.4s ease-out both;
+    }
+
+    .animate-run-light {
+        animation: runLight 3s ease-in-out infinite;
+    }
+
+    .animate-border-spin {
+        animation: rotateBorderLight 3s linear infinite;
+    }
+
+    .font-mo {
+        font-family: "Manrope", sans-serif;
+        font-weight: 800;
+    }
+
+    .font-bold-hero {
+        font-family: "Poppins", sans-serif;
+        font-weight: 900;
+    }
+
+    .text-shadow-bold {
+        text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1), 4px 4px 0px rgba(0, 0, 0, 0.05);
+    }
+
+    .animate-fadeIn {
+        animation: fadeIn 0.35s ease forwards;
+    }
+
+  /* PageBreak — visible in admin editor as dashed divider */
+  .case-editor div[data-page-break] {
+    display: block;
+    border: none;
+    border-top: 2px dashed rgba(0,61,107,0.25);
+    margin: 1.5rem 0;
+    position: relative;
+    pointer-events: none;
+    user-select: none;
+  }
+  .case-editor div[data-page-break]::after {
+    content: '— Halaman Baru —';
+    position: absolute;
+    top: -0.65em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0 0.75rem;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(0,61,107,0.35);
+    font-family: 'Manrope', sans-serif;
+  }
+}
+
+/* ── Case Study Prose (public CaseDetail read-only renderer) ── */
+.case-prose h1 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: #003D6B;
+  margin: 2rem 0 1rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.case-prose h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  color: #003D6B;
+  margin: 1.75rem 0 0.75rem;
+  line-height: 1.2;
+}
+.case-prose h3 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #003D6B;
+  margin: 1.5rem 0 0.5rem;
+}
+.case-prose p {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: rgba(0, 61, 107, 0.65);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.case-prose ul,
+.case-prose ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.case-prose li {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: rgba(0, 61, 107, 0.65);
+  margin-bottom: 0.4rem;
+}
+.case-prose blockquote {
+  border-left: 3px solid #D97706;
+  padding-left: 1rem;
+  color: rgba(0, 61, 107, 0.5);
+  font-style: italic;
+  margin: 1.5rem 0;
+}
+.case-prose hr {
+  border: none;
+  border-top: 1px solid rgba(0, 61, 107, 0.1);
+  margin: 2rem 0;
+}
+.case-prose strong { color: #003D6B; font-weight: 700; }
+.case-prose em     { color: rgba(0, 61, 107, 0.8); }
+
+/* Image alignment */
+.case-prose img {
+  border-radius: 4px;
+  max-width: 100%;
+}
+.case-prose img[data-align="left"] {
+  float: left;
+  margin: 0.25rem 1.5rem 1rem 0;
+  max-width: 45%;
+}
+.case-prose img[data-align="right"] {
+  float: right;
+  margin: 0.25rem 0 1rem 1.5rem;
+  max-width: 45%;
+}
+.case-prose img[data-align="center"] {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 85%;
+}
+.case-prose img[data-align="full"] {
+  display: block;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+/* ── Case Editor (admin Tiptap editable area) ── */
+.case-editor .ProseMirror {
+  outline: none;
+  min-height: 420px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #1e293b;
+}
+.case-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+}
+.case-editor .ProseMirror h1 { font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.8rem; color: #003D6B; margin: 1.5rem 0 0.75rem; }
+.case-editor .ProseMirror h2 { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.4rem; color: #003D6B; margin: 1.25rem 0 0.6rem; }
+.case-editor .ProseMirror h3 { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 1.1rem; color: #003D6B; margin: 1rem 0 0.5rem; }
+.case-editor .ProseMirror p  { margin-bottom: 0.9rem; overflow: hidden; }
+.case-editor .ProseMirror ul,
+.case-editor .ProseMirror ol { padding-left: 1.5rem; margin-bottom: 0.9rem; }
+.case-editor .ProseMirror li { margin-bottom: 0.3rem; }
+.case-editor .ProseMirror blockquote { border-left: 3px solid #D97706; padding-left: 1rem; color: #64748b; font-style: italic; margin: 1rem 0; }
+.case-editor .ProseMirror hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+.case-editor .ProseMirror img { border-radius: 4px; max-width: 100%; cursor: pointer; }
+.case-editor .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #D97706; outline-offset: 2px; }
+.case-editor .ProseMirror img[data-align="left"]   { float: left;  margin: 0.25rem 1.5rem 1rem 0; max-width: 45%; }
+.case-editor .ProseMirror img[data-align="right"]  { float: right; margin: 0.25rem 0 1rem 1.5rem; max-width: 45%; }
+.case-editor .ProseMirror img[data-align="center"] { display: block; margin: 1rem auto; max-width: 85%; }
+.case-editor .ProseMirror img[data-align="full"]   { display: block; width: 100%; margin: 1rem 0; }
+
+/* ToolLink — public CaseDetail rendering */
+.case-prose a.tool-link {
+  color: #D97706;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  font-weight: 600;
+  cursor: pointer;
+}
+.case-prose a.tool-link:hover {
+  text-decoration-style: solid;
+}
+
+/* ToolLink — admin editor preview */
+.case-editor a.tool-link {
+  color: #D97706;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  font-weight: 600;
+  cursor: default;
+}

@@ -1,0 +1,73 @@
+import ArrowRight from "../../assets/arrowRight.svg?react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
+const MotionLink = motion(Link);
+
+export default function OrangeButtonArrow({ buttonText, to = "/", large = false }) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const h        = large ? 54 : 46;
+    const pl       = large ? 26 : 20;
+    const pr       = large ? 16 : 12;
+    const fontSize = large ? 15 : 14;
+    const chipSize = large ? 36 : 30;
+    const iconSize = large ? "w-4 h-4" : "w-3.5 h-3.5";
+
+    return (
+        <MotionLink
+            to={to}
+            className="relative flex items-center gap-3 cursor-pointer focus:outline-none text-white rounded-full overflow-hidden"
+            style={{
+                height: h,
+                paddingLeft: pl,
+                paddingRight: pr,
+                background: isHovered ? "#b45309" : "#D97706",
+            }}
+            animate={{
+                scale: isHovered ? 1.03 : 1,
+                boxShadow: isHovered
+                    ? "0 0 28px rgba(217,119,6,0.5)"
+                    : "0 0 0px rgba(217,119,6,0)",
+            }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            whileTap={{ scale: 0.97 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {/* Running light streak */}
+            <span
+                className="animate-run-light absolute top-0 left-0 h-full w-[45%] pointer-events-none"
+                style={{
+                    background:
+                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 40%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.12) 60%, transparent 100%)",
+                }}
+            />
+
+            {/* Label */}
+            <span
+                className="relative z-10 whitespace-nowrap font-semibold"
+                style={{ fontSize, fontFamily: "'Manrope', sans-serif" }}
+            >
+                {buttonText}
+            </span>
+
+            {/* Arrow chip */}
+            <motion.div
+                className="relative z-10 flex items-center justify-center rounded-full flex-shrink-0"
+                style={{
+                    width: chipSize,
+                    height: chipSize,
+                    background: "rgba(255,255,255,0.2)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                }}
+                animate={{ x: isHovered ? 4 : 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+                <ArrowRight className={`${iconSize} fill-white`} />
+            </motion.div>
+        </MotionLink>
+    );
+}
