@@ -34,25 +34,19 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // 1. Check or create client
-    const { data: existingClient, error: fetchClientError } = await supabase
+    // 1. Upsert client by email (UNIQUE constraint di-enforce di DB)
+    // ignoreDuplicates: false → jika email sama, update full_name & phone_number
+    const { data: clientRow, error: upsertClientError } = await supabase
       .from('clients')
+      .upsert(
+        { full_name: fullName, email, phone_number: phone },
+        { onConflict: 'email', ignoreDuplicates: false }
+      )
       .select('id')
-      .eq('email', email)
-      .maybeSingle()
+      .single()
 
-    if (fetchClientError) throw fetchClientError
-
-    let clientId = existingClient?.id
-    if (!clientId) {
-      const { data: newClient, error: insertClientError } = await supabase
-        .from('clients')
-        .insert([{ full_name: fullName, email, phone_number: phone }])
-        .select('id')
-        .single()
-      if (insertClientError) throw insertClientError
-      clientId = newClient.id
-    }
+    if (upsertClientError) throw upsertClientError
+    const clientId = clientRow.id
 
     // 2. Check if there's already a pending consultation for this client
     const { data: existingConsult } = await supabase
