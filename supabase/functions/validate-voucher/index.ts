@@ -56,7 +56,13 @@ Deno.serve(async (req) => {
             .from('vouchers')
             .update({ used_count: prevVoucher.used_count - 1 })
             .eq('id', prevVoucher.id)
-          if (decrementErr) console.error('Gagal decrement used_count:', decrementErr.message)
+          if (decrementErr) {
+            console.error('Gagal decrement used_count:', decrementErr.message)
+            return new Response(
+              JSON.stringify({ error: 'Gagal mengembalikan kuota voucher' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
         }
       }
 
@@ -142,7 +148,13 @@ Deno.serve(async (req) => {
           .from('vouchers')
           .update({ used_count: prevV.used_count - 1 })
           .eq('id', prevV.id)
-        if (swapDecrErr) console.error('Gagal decrement voucher lama:', swapDecrErr.message)
+        if (swapDecrErr) {
+          console.error('Gagal decrement voucher lama:', swapDecrErr.message)
+          return new Response(
+            JSON.stringify({ error: 'Gagal mengganti voucher' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
       }
     }
 
