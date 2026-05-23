@@ -179,15 +179,18 @@ export default function AdminConsultations() {
 
   const assignConsultant = async (consultationId, consultantId) => {
     if (!consultantId) return;
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assign-consultant`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
-        body: JSON.stringify({ consultation_id: consultationId, consultant_id: consultantId }),
-      }
-    );
-    if (res.ok) { showToast('Konsultan berhasil diassign!'); fetchData(); }
+    const { error } = await supabase
+      .from('consultations')
+      .update({ consultant_id: consultantId })
+      .eq('id', consultationId);
+    if (!error) {
+      showToast('Konsultan berhasil diassign!');
+      setConsultations((prev) =>
+        prev.map((c) => c.id === consultationId ? { ...c, consultant_id: consultantId } : c)
+      );
+    } else {
+      showToast(`Gagal assign konsultan: ${error.message}`, 'error');
+    }
   };
 
   const deleteConsultation = async (consultationId, clientName = 'klien ini') => {
