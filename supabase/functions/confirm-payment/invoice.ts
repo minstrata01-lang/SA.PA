@@ -24,6 +24,12 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   const formattedDiscount    = discountAmount != null ? formatRupiah(discountAmount) : null
   const formattedFinalAmount = formatRupiah(finalAmount)
 
+  // Parse projectDetails → category (bold) + description (regular)
+  const rawDetails    = projectDetails || '-'
+  const dashIdx       = rawDetails.indexOf(' - ')
+  const categoryLabel = dashIdx >= 0 ? rawDetails.slice(0, dashIdx).trim() : rawDetails
+  const descLabel     = dashIdx >= 0 ? rawDetails.slice(dashIdx + 3).trim() : ''
+
   const pdfDoc = await PDFDocument.create()
   const page   = pdfDoc.addPage([595, 842]) // A4
   const { width, height } = page.getSize()
@@ -174,7 +180,8 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   // TABLE
   // ═══════════════════════════════════════════════════════════════════════
   const tTop = belowKepY - 16
-  const rH   = 24  // row height
+  const rH   = 24                      // row height (header & discount row)
+  const rH1  = descLabel ? 38 : rH    // service row height (taller when has description)
 
   // Column X positions
   const c0 = mL        // KETERANGAN
@@ -201,29 +208,38 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     })
   })
 
-  // Data row
+  // Service data row (taller when description is present)
   const r1Y = tTop - rH
+  const numY = r1Y - Math.round(rH1 / 2) - 2  // vertical center for numeric columns
   page.drawRectangle({
-    x: mL, y: r1Y - rH + 5,
-    width: mR - mL, height: rH,
+    x: mL, y: r1Y - rH1 + 5,
+    width: mR - mL, height: rH1,
     color: grayLight,
   })
-  const tRow: [string, number][] = [
-    ['Layanan Konsultasi Struktural', c0 + 8],
-    [formattedAmount,                 c1 + 8],
-    ['1',                             c2 + 8],
-    [formattedAmount,                 c3 + 8],
-  ]
-  tRow.forEach(([text, x]) => {
-    page.drawText(text, {
-      x, y: r1Y - 11,
-      size: 8.5, font: fontRegular, color: black,
+  // KETERANGAN: category (bold) on top, description (regular) below
+  page.drawText(sanitizeText(categoryLabel), {
+    x: c0 + 8, y: r1Y - 12,
+    size: 8.5, font: fontBold, color: black,
+  })
+  if (descLabel) {
+    page.drawText(sanitizeText(descLabel), {
+      x: c0 + 8, y: r1Y - 26,
+      size: 7.5, font: fontRegular, color: grayDark,
+      maxWidth: 220, lineHeight: 12,
     })
+  }
+  // HARGA, JML, TOTAL — vertically centered, TOTAL shows final amount (after discount)
+  ;([
+    [formattedAmount,      c1 + 8],
+    ['1',                  c2 + 8],
+    [formattedFinalAmount, c3 + 8],
+  ] as [string, number][]).forEach(([text, x]) => {
+    page.drawText(text, { x, y: numY, size: 8.5, font: fontRegular, color: black })
   })
 
   // Discount row (if applicable)
   if (formattedDiscount != null) {
-    const r2Y = r1Y - rH
+    const r2Y = r1Y - rH1
     page.drawRectangle({
       x: mL, y: r2Y - rH + 5,
       width: mR - mL, height: rH,
@@ -245,7 +261,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   }
 
   // Table bottom border
-  const tBotY = formattedDiscount != null ? r1Y - 2 * rH + 5 : r1Y - rH + 5
+  const tBotY = formattedDiscount != null ? r1Y - rH1 - rH + 5 : r1Y - rH1 + 5
   page.drawLine({
     start: { x: mL, y: tBotY },
     end:   { x: mR, y: tBotY },
