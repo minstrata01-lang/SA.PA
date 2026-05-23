@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { fullName, email, phone, selectedCategories, location } = await req.json()
+    const { fullName, email, phone, selectedCategories, location, projectDetails } = await req.json()
 
     if (!fullName || !email || !phone) {
       return new Response(
@@ -34,20 +34,30 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // 1. Check or create client
-    const { data: existingClient, error: fetchClientError } = await supabase
+    // 1. Cari client berdasarkan email, lalu update atau insert baru
+    const { data: existingClient, error: lookupError } = await supabase
       .from('clients')
       .select('id')
       .eq('email', email)
       .maybeSingle()
 
-    if (fetchClientError) throw fetchClientError
+    if (lookupError) throw lookupError
 
-    let clientId = existingClient?.id
-    if (!clientId) {
+    let clientId: string
+
+    if (existingClient) {
+      // Client sudah ada → update nama & nomor HP
+      const { error: updateClientError } = await supabase
+        .from('clients')
+        .update({ full_name: fullName, phone_number: phone })
+        .eq('id', existingClient.id)
+      if (updateClientError) throw updateClientError
+      clientId = existingClient.id
+    } else {
+      // Client baru → insert
       const { data: newClient, error: insertClientError } = await supabase
         .from('clients')
-        .insert([{ full_name: fullName, email, phone_number: phone }])
+        .insert({ full_name: fullName, email, phone_number: phone })
         .select('id')
         .single()
       if (insertClientError) throw insertClientError
@@ -99,12 +109,13 @@ Deno.serve(async (req: Request) => {
       const { error: consultError } = await supabase
         .from('consultations')
         .insert([{
-          order_id: orderId,
-          client_id: clientId,
-          payment_status: 'pending',
-          session_status: 'inactive',
-          selected_categories: selectedCategories ?? [],
-          location: location ?? null,
+          order_id:        orderId,
+          client_id:       clientId,
+          payment_status:  'pending',
+          session_status:  'inactive',
+          amount:          500000,
+          location:        location   ?? null,
+          project_details: projectDetails || null,
         }])
 
       if (!consultError) {

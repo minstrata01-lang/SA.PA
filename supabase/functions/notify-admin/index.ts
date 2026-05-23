@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { order_id } = await req.json()
+    const body = await req.json()
+    const { order_id, voucher_used } = body as { order_id: string; voucher_used?: boolean }
 
     if (!order_id || typeof order_id !== 'string' || !order_id.trim()) {
       return new Response(
@@ -25,27 +26,43 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Jika 100% voucher, update payment_status ke pending_verification
+    if (voucher_used) {
+      const { error: updateStatusErr } = await supabase
+        .from('consultations')
+        .update({ payment_status: 'pending_verification' })
+        .eq('order_id', order_id)
+      if (updateStatusErr) console.error('payment_status update failed:', updateStatusErr.message)
+    }
+
     const { data: consultation } = await supabase
       .from('consultations')
-      .select('order_id, amount, clients(full_name, email, phone_number)')
+      .select('order_id, amount, voucher_code, discount_percent, discount_amount, clients(full_name, email, phone_number)')
       .eq('order_id', order_id)
       .single()
 
-    const client = consultation
-      ? (Array.isArray(consultation.clients) ? consultation.clients[0] : consultation.clients)
-      : null
+    const rawClient = consultation?.clients ?? null
+    const client = Array.isArray(rawClient) ? (rawClient[0] ?? null) : rawClient
 
-    const clientName = client?.full_name || 'Pelanggan'
-    const clientPhone = client?.phone_number || null
+    const clientName  = client?.full_name    || 'Pelanggan'
+    const clientPhone = client?.phone_number  || null
 
-    // WA ke admin
-    const pesanAdmin = `🔔 *Pesanan Baru Masuk*\n\nNo. Order: *${order_id}*\nNama: ${clientName}\nEmail: ${client?.email || '-'}\nNo. HP: ${clientPhone || '-'}\n\nBukti transfer telah diupload. Buka dashboard untuk verifikasi:\n${Deno.env.get('FRONTEND_URL')}/admin/consultations`
+    // Susun pesan WA admin
+    let voucherLine = ''
+    if (voucher_used && consultation?.voucher_code) {
+      const disc     = consultation.discount_percent ?? 0
+      const discAmt  = consultation.discount_amount ?? 0
+      const finalAmt = (consultation.amount ?? 500000) - discAmt
+      voucherLine = `\n\n🎟️ *Voucher digunakan*\nKode: ${consultation.voucher_code} — Diskon ${disc}% (Rp ${discAmt.toLocaleString('id-ID')})\nTotal dibayar: Rp ${finalAmt.toLocaleString('id-ID')}`
+    }
+
+    const pesanAdmin = `🔔 *${voucher_used ? 'Pesanan Voucher 100%' : 'Pesanan Baru Masuk'}*\n\nNo. Order: *${order_id}*\nNama: ${clientName}\nEmail: ${client?.email || '-'}\nNo. HP: ${clientPhone || '-'}${voucherLine}\n\n${voucher_used ? 'Pesanan ini menggunakan voucher 100%.' : 'Bukti transfer telah diupload.'} Buka dashboard untuk verifikasi:\n${Deno.env.get('FRONTEND_URL')}/admin/consultations`
 
     const waAdminRes = await fetch('https://api.fonnte.com/send', {
       method: 'POST',
       headers: { Authorization: Deno.env.get('FONNTE_TOKEN')! },
       body: new URLSearchParams({
-        target: Deno.env.get('ADMIN_WA_NUMBER')!,
+        target:  Deno.env.get('ADMIN_WA_NUMBER')!,
         message: pesanAdmin,
       }),
     })
@@ -54,20 +71,21 @@ Deno.serve(async (req) => {
     // WA ke client
     if (clientPhone) {
       try {
-        const formattedPhone =
-          clientPhone.startsWith('0') ? '62' + clientPhone.slice(1) : clientPhone
+        const formattedPhone = clientPhone.startsWith('0')
+          ? '62' + clientPhone.slice(1)
+          : clientPhone
 
-        const pesanClient = `✅ *Bukti Transfer Diterima*\n\nHalo *${clientName}*,\n\nBukti transfer Anda untuk order *${order_id}* telah berhasil kami terima.\n\n📧 *Silakan cek email Anda* untuk mendapatkan informasi lebih lanjut mengenai order ini.\n\n⏳ Admin kami akan memverifikasi pembayaran Anda dan mengirimkan konfirmasi melalui email. Proses ini biasanya memakan waktu *maksimal 1x24 jam*.\n\nJika ada pertanyaan, jangan ragu untuk menghubungi kami.\n\nTerima kasih telah mempercayai layanan *SAPA*! 🙏`
+        const pesanClient = `✅ *${voucher_used ? 'Voucher Berhasil Digunakan' : 'Bukti Transfer Diterima'}*\n\nHalo *${clientName}*,\n\n${
+          voucher_used
+            ? `Voucher Anda untuk order *${order_id}* telah berhasil diproses.\n\n⏳ Admin kami akan mengaktifkan sesi konsultasi Anda segera.`
+            : `Bukti transfer Anda untuk order *${order_id}* telah berhasil kami terima.\n\n📧 *Silakan cek email Anda* untuk informasi lebih lanjut.\n\n⏳ Admin kami akan memverifikasi pembayaran dalam *maksimal 1x24 jam*.`
+        }\n\nTerima kasih telah mempercayai layanan *SAPA*! 🙏`
 
-        const waClientRes = await fetch('https://api.fonnte.com/send', {
+        await fetch('https://api.fonnte.com/send', {
           method: 'POST',
           headers: { Authorization: Deno.env.get('FONNTE_TOKEN')! },
-          body: new URLSearchParams({
-            target: formattedPhone,
-            message: pesanClient,
-          }),
+          body: new URLSearchParams({ target: formattedPhone, message: pesanClient }),
         })
-        console.log('WA client sent, status:', waClientRes.status)
       } catch (waErr) {
         console.error('WA client gagal:', (waErr as Error).message)
       }
@@ -80,7 +98,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('Unhandled error:', (err as Error).message)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: (err as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

@@ -30,3 +30,23 @@ Deno.test('generateInvoicePDF works without logoUrl', async () => {
   assertInstanceOf(bytes, Uint8Array)
   assert(bytes.length > 0)
 })
+
+Deno.test('generateInvoicePDF com diskon shows discount row', async () => {
+  const bytes = await generateInvoicePDF({
+    ...baseParams,
+    discountPercent: 50,
+    discountAmount: 250000,
+  })
+  assertInstanceOf(bytes, Uint8Array)
+  assert(bytes.length > 0)
+})
+
+Deno.test('generateInvoicePDF com diskon 100% does not error', async () => {
+  const bytes = await generateInvoicePDF({
+    ...baseParams,
+    discountPercent: 100,
+    discountAmount: 500000,
+  })
+  assertInstanceOf(bytes, Uint8Array)
+  assert(bytes.length > 0)
+})

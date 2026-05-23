@@ -43,6 +43,15 @@ function IconUsers() {
   );
 }
 
+function IconTicket() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+      <path d="M13 5v2M13 17v2M13 11v2"/>
+    </svg>
+  );
+}
+
 function IconLogout() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -58,6 +67,7 @@ const NAV_ITEMS = [
   { to: '/admin/tools',         label: 'Tools',       Icon: IconWrench    },
   { to: '/admin/cases',         label: 'Case Study',  Icon: IconFolder    },
   { to: '/admin/consultants',   label: 'Konsultan',   Icon: IconUsers     },
+  { to: '/admin/vouchers',      label: 'Voucher',     Icon: IconTicket    },
 ];
 
 const sidebarVariants = {

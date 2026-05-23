@@ -21,6 +21,11 @@ function ReviewConfirmationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isProceeding,        setIsProceeding]        = useState(false)
+  const [voucherCode,         setVoucherCode]         = useState('')
+  const [voucherResult,       setVoucherResult]       = useState(null)
+  const [voucherError,        setVoucherError]        = useState('')
+  const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
 
   const reviewData = location.state?.reviewData;
   if (!reviewData) return <Navigate to="/layanan" replace />;
@@ -69,11 +74,93 @@ function ReviewConfirmationPage() {
     });
   };
 
-  const handleProceedToUpload = () => {
-    navigate("/payment/upload", {
-      state: { reviewData, orderId: reviewData.orderId },
-    });
-  };
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return
+    setIsValidatingVoucher(true)
+    setVoucherError('')
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-voucher`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ code: voucherCode.trim(), order_id: reviewData.orderId }),
+        }
+      )
+      const data = await res.json()
+      if (data.valid) {
+        setVoucherResult(data)
+        setVoucherError('')
+      } else {
+        setVoucherError(data.reason || 'Kode voucher tidak valid')
+        setVoucherResult(null)
+      }
+    } catch {
+      setVoucherError('Gagal memvalidasi voucher. Coba lagi.')
+    } finally {
+      setIsValidatingVoucher(false)
+    }
+  }
+
+  const handleRemoveVoucher = () => {
+    fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-voucher`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ code: null, order_id: reviewData.orderId }),
+      }
+    ).catch(() => {})
+    setVoucherResult(null)
+    setVoucherCode('')
+    setVoucherError('')
+  }
+
+  const handleProceedToPayment = async () => {
+    if (isProceeding) return   // cegah double-click
+    setIsProceeding(true)
+
+    const isFree = voucherResult?.final_amount === 0
+
+    if (isFree) {
+      try {
+        await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-admin`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ order_id: reviewData.orderId, voucher_used: true }),
+          }
+        )
+      } catch {}
+      navigate('/payment/pending', { state: { orderId: reviewData.orderId, reviewData } })
+      return  // navigasi terjadi, setIsProceeding(false) tidak perlu
+    }
+
+    const updatedReviewData = voucherResult
+      ? {
+          ...reviewData,
+          voucher_code:     voucherResult.code,
+          discount_percent: voucherResult.discount_percent,
+          discount_amount:  voucherResult.discount_amount,
+          final_amount:     voucherResult.final_amount,
+        }
+      : reviewData
+
+    navigate('/payment/upload', {
+      state: { reviewData: updatedReviewData, orderId: reviewData.orderId },
+    })
+    // navigasi terjadi, setIsProceeding(false) tidak diperlukan
+  }
 
   return (
     <section className="bg-white pt-28 pb-14 px-4 sm:px-6 md:px-8">
@@ -116,6 +203,84 @@ function ReviewConfirmationPage() {
           ))}
         </motion.div>
 
+        {/* Voucher Section */}
+        <motion.div
+          className="mt-8"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: EASE, delay: 0.15 }}
+        >
+          <label
+            htmlFor="voucher-input"
+            className="text-xs font-bold tracking-[0.12em] uppercase mb-3"
+            style={{ color: muted, fontFamily: "'Manrope', sans-serif", display: 'block' }}
+          >
+            Kode Voucher <span style={{ color: orange }}>(Opsional)</span>
+          </label>
+
+          {!voucherResult ? (
+            <div className="flex gap-2">
+              <input
+                id="voucher-input"
+                type="text"
+                value={voucherCode}
+                onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyVoucher()}
+                placeholder="Masukkan kode voucher"
+                style={{
+                  flex: 1, height: 44, padding: '0 14px',
+                  border: `1px solid ${voucherError ? '#ef4444' : rule}`,
+                  outline: 'none', fontSize: 13, color: blue,
+                  fontFamily: "'Manrope', sans-serif", background: 'white',
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleApplyVoucher}
+                disabled={!voucherCode.trim() || isValidatingVoucher}
+                style={{
+                  height: 44, padding: '0 20px',
+                  background: !voucherCode.trim() || isValidatingVoucher ? 'rgba(217,119,6,0.4)' : orange,
+                  color: 'white', border: 'none', fontSize: 13,
+                  fontFamily: "'Manrope', sans-serif",
+                  cursor: !voucherCode.trim() || isValidatingVoucher ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s',
+                }}
+              >
+                {isValidatingVoucher ? '...' : 'Pakai'}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-start justify-between p-4"
+                 style={{ background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.2)' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: '#065f46', fontFamily: "'Manrope', sans-serif" }}>
+                  ✓ Voucher {voucherResult.code}
+                </p>
+                <p className="text-xs mt-1" style={{ color: '#065f46', fontFamily: "'Manrope', sans-serif" }}>
+                  Diskon {voucherResult.discount_percent}% = -Rp {voucherResult.discount_amount.toLocaleString('id-ID')}
+                </p>
+                <p className="text-xs font-bold mt-1" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>
+                  Total yang dibayar: Rp {voucherResult.final_amount.toLocaleString('id-ID')}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveVoucher}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: muted, fontSize: 18, padding: '2px 6px' }}
+                title="Hapus voucher"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {voucherError && (
+            <p className="mt-2 text-xs font-medium" style={{ color: '#ef4444', fontFamily: "'Manrope', sans-serif" }}>
+              ⚠ {voucherError}
+            </p>
+          )}
+        </motion.div>
+
         {/* Checkbox confirm */}
         <motion.label
           className="mt-8 flex items-start gap-3 cursor-pointer"
@@ -156,18 +321,22 @@ function ReviewConfirmationPage() {
           </button>
           <button
             type="button"
-            onClick={handleProceedToUpload}
-            disabled={!isConfirmed}
+            onClick={handleProceedToPayment}
+            disabled={!isConfirmed || isProceeding}
             className="rounded-full font-semibold text-white"
             style={{
               height: 46, paddingLeft: 24, paddingRight: 24,
-              background: !isConfirmed ? "rgba(217,119,6,0.4)" : orange,
+              background: !isConfirmed || isProceeding ? "rgba(217,119,6,0.4)" : orange,
               border: "none", fontSize: 14, fontFamily: "'Manrope', sans-serif",
-              cursor: !isConfirmed ? "not-allowed" : "pointer",
+              cursor: !isConfirmed || isProceeding ? "not-allowed" : "pointer",
               transition: "background 0.2s ease",
             }}
           >
-            Lanjut ke Pembayaran →
+            {isProceeding
+              ? 'Memproses...'
+              : voucherResult?.final_amount === 0
+                ? 'Konfirmasi Tanpa Pembayaran →'
+                : 'Lanjut ke Pembayaran →'}
           </button>
         </motion.div>
       </div>

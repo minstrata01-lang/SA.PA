@@ -1,17 +1,34 @@
 import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1'
 
 export interface InvoiceParams {
-  orderId: string
-  clientName: string
-  clientEmail: string
-  clientPhone: string
-  projectDetails: string
-  amount: number
-  logoUrl?: string
+  orderId:          string
+  clientName:       string
+  clientEmail:      string
+  clientPhone:      string
+  projectDetails:   string
+  amount:           number
+  logoUrl?:         string
+  discountPercent?: number
+  discountAmount?:  number
 }
 
 export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Array> {
-  const { orderId, clientName, clientEmail, clientPhone, projectDetails, amount, logoUrl } = params
+  const {
+    orderId, clientName, clientEmail, clientPhone,
+    projectDetails, amount, logoUrl,
+    discountPercent, discountAmount,
+  } = params
+
+  const finalAmount          = discountAmount != null ? amount - discountAmount : amount
+  const formattedAmount      = formatRupiah(amount)
+  const formattedDiscount    = discountAmount != null ? formatRupiah(discountAmount) : null
+  const formattedFinalAmount = formatRupiah(finalAmount)
+
+  // Parse projectDetails → category (bold) + description (regular)
+  const rawDetails    = projectDetails || '-'
+  const dashIdx       = rawDetails.indexOf(' - ')
+  const categoryLabel = dashIdx >= 0 ? rawDetails.slice(0, dashIdx).trim() : rawDetails
+  const descLabel     = dashIdx >= 0 ? rawDetails.slice(dashIdx + 3).trim() : ''
 
   const pdfDoc = await PDFDocument.create()
   const page   = pdfDoc.addPage([595, 842]) // A4
@@ -34,8 +51,6 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   const mm     = (today.getMonth() + 1).toString().padStart(2, '0')
   const yyyy   = today.getFullYear()
   const dateStr = `${dd}/${mm}/${yyyy}`
-
-  const formattedAmount = formatRupiah(amount)
   const mL = 50          // left margin
   const mR = width - 50  // right edge
 
@@ -165,13 +180,20 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   // TABLE
   // ═══════════════════════════════════════════════════════════════════════
   const tTop = belowKepY - 16
-  const rH   = 24  // row height
 
-  // Column X positions
+  // Column X positions (defined early so we can compute text-wrap metrics)
   const c0 = mL        // KETERANGAN
   const c1 = mL + 255  // HARGA
   const c2 = c1 + 90   // JML
   const c3 = c2 + 40   // TOTAL
+
+  // Max width for KETERANGAN text (prevents overflow into HARGA column)
+  const keteranganMaxW = c1 - c0 - 16
+  const catLines  = countLines(sanitizeText(categoryLabel), fontBold,    8.5, keteranganMaxW)
+  const descLines = descLabel ? countLines(sanitizeText(descLabel), fontRegular, 7.5, keteranganMaxW) : 0
+  const lineH = 13
+  const rH    = 24                     // row height (header & discount row)
+  const rH1   = Math.max(rH, 10 + catLines * lineH + (descLabel ? 4 + descLines * lineH : 0))
 
   // Header row
   page.drawRectangle({
@@ -192,28 +214,64 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     })
   })
 
-  // Data row
+  // Service data row (taller when description is present)
   const r1Y = tTop - rH
+  const numY = r1Y - Math.round(rH1 / 2) - 2  // vertical center for numeric columns
   page.drawRectangle({
-    x: mL, y: r1Y - rH + 5,
-    width: mR - mL, height: rH,
+    x: mL, y: r1Y - rH1 + 5,
+    width: mR - mL, height: rH1,
     color: grayLight,
   })
-  const tRow: [string, number][] = [
-    ['Layanan Konsultasi Struktural', c0 + 8],
-    [formattedAmount,                 c1 + 8],
-    ['1',                             c2 + 8],
-    [formattedAmount,                 c3 + 8],
-  ]
-  tRow.forEach(([text, x]) => {
-    page.drawText(text, {
-      x, y: r1Y - 11,
-      size: 8.5, font: fontRegular, color: black,
+  // KETERANGAN: category (bold) on top, description (regular) below
+  // catStartY / descStartY are computed so multi-line categories push description down correctly
+  const catStartY  = r1Y - 12
+  const descStartY = catStartY - catLines * lineH - 2
+  page.drawText(sanitizeText(categoryLabel), {
+    x: c0 + 8, y: catStartY,
+    size: 8.5, font: fontBold, color: black,
+    maxWidth: keteranganMaxW, lineHeight: lineH,
+  })
+  if (descLabel) {
+    page.drawText(sanitizeText(descLabel), {
+      x: c0 + 8, y: descStartY,
+      size: 7.5, font: fontRegular, color: grayDark,
+      maxWidth: keteranganMaxW, lineHeight: 12,
     })
+  }
+  // HARGA, JML, TOTAL — vertically centered, TOTAL shows final amount (after discount)
+  ;([
+    [formattedAmount,      c1 + 8],
+    ['1',                  c2 + 8],
+    [formattedFinalAmount, c3 + 8],
+  ] as [string, number][]).forEach(([text, x]) => {
+    page.drawText(text, { x, y: numY, size: 8.5, font: fontRegular, color: black })
   })
 
+  // Discount row (if applicable)
+  if (formattedDiscount != null) {
+    const r2Y = r1Y - rH1
+    page.drawRectangle({
+      x: mL, y: r2Y - rH + 5,
+      width: mR - mL, height: rH,
+      color: grayLight,
+    })
+    const discLabel = discountPercent != null ? `Diskon Voucher (${discountPercent}%)` : 'Diskon Voucher'
+    const discRow: [string, number][] = [
+      [discLabel, c0 + 8],
+      [`-${formattedDiscount}`,                c1 + 8],
+      ['1',                                    c2 + 8],
+      [`-${formattedDiscount}`,                c3 + 8],
+    ]
+    discRow.forEach(([text, x]) => {
+      page.drawText(text, {
+        x, y: r2Y - 11,
+        size: 8.5, font: fontRegular, color: rgb(0.6, 0.1, 0.1),
+      })
+    })
+  }
+
   // Table bottom border
-  const tBotY = r1Y - rH + 5
+  const tBotY = formattedDiscount != null ? r1Y - rH1 - rH + 5 : r1Y - rH1 + 5
   page.drawLine({
     start: { x: mL, y: tBotY },
     end:   { x: mR, y: tBotY },
@@ -258,7 +316,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     x: totalBoxX + 12, y: payY - 14,
     size: 7.5, font: fontBold, color: orange,
   })
-  page.drawText(formattedAmount, {
+  page.drawText(formattedFinalAmount, {
     x: totalBoxX + 12, y: payY - 38,
     size: 15, font: fontBold, color: white,
   })
@@ -307,7 +365,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     x: (width - tyW) / 2, y: 58,
     size: 9, font: fontBold, color: navy,
   })
-  const copyText = '2026 SAPA - PT Stratalift Solusi Indonesia'
+  const copyText = `${yyyy} SAPA - PT Stratalift Solusi Indonesia`
   const copyW    = fontRegular.widthOfTextAtSize(copyText, 7.5)
   page.drawText(copyText, {
     x: (width - copyW) / 2, y: 43,
@@ -329,4 +387,27 @@ function formatRupiah(amount: number): string {
 
 function sanitizeText(text: string): string {
   return text.replace(/[^\x20-\x7E]/g, '?')
+}
+
+/** Estimate how many lines `text` occupies when wrapped at `maxWidth` points. */
+function countLines(
+  text: string,
+  font: { widthOfTextAtSize: (t: string, s: number) => number },
+  fontSize: number,
+  maxWidth: number,
+): number {
+  if (!text) return 1
+  const spaceW = font.widthOfTextAtSize(' ', fontSize)
+  let lines = 1
+  let lineW = 0
+  for (const word of text.split(' ')) {
+    const wordW = font.widthOfTextAtSize(word, fontSize)
+    if (lineW > 0 && lineW + spaceW + wordW > maxWidth) {
+      lines++
+      lineW = wordW
+    } else {
+      lineW = lineW > 0 ? lineW + spaceW + wordW : wordW
+    }
+  }
+  return lines
 }
