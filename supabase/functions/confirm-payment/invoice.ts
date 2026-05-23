@@ -180,14 +180,20 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   // TABLE
   // ═══════════════════════════════════════════════════════════════════════
   const tTop = belowKepY - 16
-  const rH   = 24                      // row height (header & discount row)
-  const rH1  = descLabel ? 38 : rH    // service row height (taller when has description)
 
-  // Column X positions
+  // Column X positions (defined early so we can compute text-wrap metrics)
   const c0 = mL        // KETERANGAN
   const c1 = mL + 255  // HARGA
   const c2 = c1 + 90   // JML
   const c3 = c2 + 40   // TOTAL
+
+  // Max width for KETERANGAN text (prevents overflow into HARGA column)
+  const keteranganMaxW = c1 - c0 - 16
+  const catLines  = countLines(sanitizeText(categoryLabel), fontBold,    8.5, keteranganMaxW)
+  const descLines = descLabel ? countLines(sanitizeText(descLabel), fontRegular, 7.5, keteranganMaxW) : 0
+  const lineH = 13
+  const rH    = 24                     // row height (header & discount row)
+  const rH1   = Math.max(rH, 10 + catLines * lineH + (descLabel ? 4 + descLines * lineH : 0))
 
   // Header row
   page.drawRectangle({
@@ -217,15 +223,19 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     color: grayLight,
   })
   // KETERANGAN: category (bold) on top, description (regular) below
+  // catStartY / descStartY are computed so multi-line categories push description down correctly
+  const catStartY  = r1Y - 12
+  const descStartY = catStartY - catLines * lineH - 2
   page.drawText(sanitizeText(categoryLabel), {
-    x: c0 + 8, y: r1Y - 12,
+    x: c0 + 8, y: catStartY,
     size: 8.5, font: fontBold, color: black,
+    maxWidth: keteranganMaxW, lineHeight: lineH,
   })
   if (descLabel) {
     page.drawText(sanitizeText(descLabel), {
-      x: c0 + 8, y: r1Y - 26,
+      x: c0 + 8, y: descStartY,
       size: 7.5, font: fontRegular, color: grayDark,
-      maxWidth: 220, lineHeight: 12,
+      maxWidth: keteranganMaxW, lineHeight: 12,
     })
   }
   // HARGA, JML, TOTAL — vertically centered, TOTAL shows final amount (after discount)
@@ -377,4 +387,27 @@ function formatRupiah(amount: number): string {
 
 function sanitizeText(text: string): string {
   return text.replace(/[^\x20-\x7E]/g, '?')
+}
+
+/** Estimate how many lines `text` occupies when wrapped at `maxWidth` points. */
+function countLines(
+  text: string,
+  font: { widthOfTextAtSize: (t: string, s: number) => number },
+  fontSize: number,
+  maxWidth: number,
+): number {
+  if (!text) return 1
+  const spaceW = font.widthOfTextAtSize(' ', fontSize)
+  let lines = 1
+  let lineW = 0
+  for (const word of text.split(' ')) {
+    const wordW = font.widthOfTextAtSize(word, fontSize)
+    if (lineW > 0 && lineW + spaceW + wordW > maxWidth) {
+      lines++
+      lineW = wordW
+    } else {
+      lineW = lineW > 0 ? lineW + spaceW + wordW : wordW
+    }
+  }
+  return lines
 }
