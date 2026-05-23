@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     const sendNotifications = async () => {
       const { data: consultation, error: selectError } = await supabase
         .from('consultations')
-        .select('order_id, project_details, amount, clients(full_name, email, phone_number)')
+        .select('order_id, project_details, amount, voucher_code, discount_percent, discount_amount, clients(full_name, email, phone_number)')
         .eq('id', consultation_id)
         .single()
 
@@ -101,13 +101,15 @@ Deno.serve(async (req) => {
               }
 
               const pdfBytes = await generateInvoicePDF({
-                orderId: consultation.order_id,
+                orderId:         consultation.order_id,
                 clientName,
                 clientEmail,
-                clientPhone: clientPhone || '-',
-                projectDetails: consultation.project_details || '-',
-                amount: consultation.amount || 500000,
-                logoUrl: logoFetched,
+                clientPhone:     clientPhone || '-',
+                projectDetails:  consultation.project_details || '-',
+                amount:          consultation.amount || 500000,
+                logoUrl:         logoFetched,
+                discountPercent: consultation.discount_percent ?? undefined,
+                discountAmount:  consultation.discount_amount  ?? undefined,
               })
               let binary = ''
               pdfBytes.forEach((b) => (binary += String.fromCharCode(b)))
@@ -191,7 +193,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('Unhandled error:', (err as Error).message)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: (err as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

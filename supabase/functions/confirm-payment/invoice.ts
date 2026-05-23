@@ -1,17 +1,28 @@
 import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1'
 
 export interface InvoiceParams {
-  orderId: string
-  clientName: string
-  clientEmail: string
-  clientPhone: string
-  projectDetails: string
-  amount: number
-  logoUrl?: string
+  orderId:          string
+  clientName:       string
+  clientEmail:      string
+  clientPhone:      string
+  projectDetails:   string
+  amount:           number
+  logoUrl?:         string
+  discountPercent?: number
+  discountAmount?:  number
 }
 
 export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Array> {
-  const { orderId, clientName, clientEmail, clientPhone, projectDetails, amount, logoUrl } = params
+  const {
+    orderId, clientName, clientEmail, clientPhone,
+    projectDetails, amount, logoUrl,
+    discountPercent, discountAmount,
+  } = params
+
+  const finalAmount          = discountAmount != null ? amount - discountAmount : amount
+  const formattedAmount      = formatRupiah(amount)
+  const formattedDiscount    = discountAmount != null ? formatRupiah(discountAmount) : null
+  const formattedFinalAmount = formatRupiah(finalAmount)
 
   const pdfDoc = await PDFDocument.create()
   const page   = pdfDoc.addPage([595, 842]) // A4
@@ -34,8 +45,6 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   const mm     = (today.getMonth() + 1).toString().padStart(2, '0')
   const yyyy   = today.getFullYear()
   const dateStr = `${dd}/${mm}/${yyyy}`
-
-  const formattedAmount = formatRupiah(amount)
   const mL = 50          // left margin
   const mR = width - 50  // right edge
 
@@ -212,6 +221,28 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     })
   })
 
+  // Discount row (if applicable)
+  if (formattedDiscount != null) {
+    const r2Y = r1Y - rH
+    page.drawRectangle({
+      x: mL, y: r2Y - rH + 5,
+      width: mR - mL, height: rH,
+      color: grayLight,
+    })
+    const discRow: [string, number][] = [
+      [`Diskon Voucher (${discountPercent}%)`, c0 + 8],
+      [`-${formattedDiscount}`,                c1 + 8],
+      ['1',                                    c2 + 8],
+      [`-${formattedDiscount}`,                c3 + 8],
+    ]
+    discRow.forEach(([text, x]) => {
+      page.drawText(text, {
+        x, y: r2Y - 11,
+        size: 8.5, font: fontRegular, color: rgb(0.6, 0.1, 0.1),
+      })
+    })
+  }
+
   // Table bottom border
   const tBotY = r1Y - rH + 5
   page.drawLine({
@@ -258,7 +289,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     x: totalBoxX + 12, y: payY - 14,
     size: 7.5, font: fontBold, color: orange,
   })
-  page.drawText(formattedAmount, {
+  page.drawText(formattedFinalAmount, {
     x: totalBoxX + 12, y: payY - 38,
     size: 15, font: fontBold, color: white,
   })
