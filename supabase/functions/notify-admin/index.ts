@@ -31,9 +31,8 @@ Deno.serve(async (req) => {
       .eq('order_id', order_id)
       .single()
 
-    const client = consultation
-      ? (Array.isArray(consultation.clients) ? consultation.clients[0] : consultation.clients)
-      : null
+    const rawClient = consultation?.clients ?? null
+    const client = Array.isArray(rawClient) ? (rawClient[0] ?? null) : rawClient
 
     const clientName = client?.full_name || 'Pelanggan'
     const clientPhone = client?.phone_number || null
