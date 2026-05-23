@@ -120,8 +120,20 @@ function ConsultationForm({ onBackToIntro }) {
         },
       });
     } catch (error) {
-      const detailedMessage = [error?.message, error?.details, error?.hint].filter(Boolean).join(" | ");
-      setSubmitError(detailedMessage || "Gagal menyimpan data konsultasi. Silakan coba lagi.");
+      // Coba ambil pesan error detail dari response body edge function
+      let detailedMessage = "";
+      try {
+        if (error?.context?.json) {
+          const body = await error.context.json();
+          detailedMessage = body?.message || body?.error || "";
+        }
+      } catch { /* abaikan jika gagal parse */ }
+
+      setSubmitError(
+        detailedMessage ||
+        [error?.message, error?.details, error?.hint].filter(Boolean).join(" | ") ||
+        "Gagal menyimpan data konsultasi. Silakan coba lagi."
+      );
     } finally {
       setIsSubmitting(false);
     }

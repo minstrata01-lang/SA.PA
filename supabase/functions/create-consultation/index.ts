@@ -34,19 +34,35 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // 1. Upsert client by email (UNIQUE constraint di-enforce di DB)
-    // ignoreDuplicates: false → jika email sama, update full_name & phone_number
-    const { data: clientRow, error: upsertClientError } = await supabase
+    // 1. Cari client berdasarkan email, lalu update atau insert baru
+    const { data: existingClient, error: lookupError } = await supabase
       .from('clients')
-      .upsert(
-        { full_name: fullName, email, phone_number: phone },
-        { onConflict: 'email', ignoreDuplicates: false }
-      )
       .select('id')
-      .single()
+      .eq('email', email)
+      .maybeSingle()
 
-    if (upsertClientError) throw upsertClientError
-    const clientId = clientRow.id
+    if (lookupError) throw lookupError
+
+    let clientId: string
+
+    if (existingClient) {
+      // Client sudah ada → update nama & nomor HP
+      const { error: updateClientError } = await supabase
+        .from('clients')
+        .update({ full_name: fullName, phone_number: phone })
+        .eq('id', existingClient.id)
+      if (updateClientError) throw updateClientError
+      clientId = existingClient.id
+    } else {
+      // Client baru → insert
+      const { data: newClient, error: insertClientError } = await supabase
+        .from('clients')
+        .insert({ full_name: fullName, email, phone_number: phone })
+        .select('id')
+        .single()
+      if (insertClientError) throw insertClientError
+      clientId = newClient.id
+    }
 
     // 2. Check if there's already a pending consultation for this client
     const { data: existingConsult } = await supabase
