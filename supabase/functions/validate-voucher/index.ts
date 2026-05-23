@@ -11,10 +11,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json()
+    let body: { order_id?: unknown; code?: unknown }
+    try {
+      body = await req.json()
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Request body tidak valid JSON' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     const { order_id, code } = body as { order_id: string; code: string | null }
 
-    if (!order_id || typeof order_id !== 'string') {
+    if (!order_id || typeof order_id !== 'string' || order_id.length > 200) {
       return new Response(
         JSON.stringify({ error: 'order_id wajib diisi' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -44,18 +52,25 @@ Deno.serve(async (req) => {
           .single()
 
         if (prevVoucher && prevVoucher.used_count > 0) {
-          await supabase
+          const { error: decrementErr } = await supabase
             .from('vouchers')
             .update({ used_count: prevVoucher.used_count - 1 })
             .eq('id', prevVoucher.id)
+          if (decrementErr) console.error('Gagal decrement used_count:', decrementErr.message)
         }
       }
 
       // Clear voucher di consultation
-      await supabase
+      const { error: clearErr } = await supabase
         .from('consultations')
         .update({ voucher_code: null, discount_percent: null, discount_amount: null })
         .eq('order_id', order_id)
+      if (clearErr) {
+        return new Response(
+          JSON.stringify({ error: 'Gagal menghapus voucher dari konsultasi' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       return new Response(
         JSON.stringify({ removed: true }),
@@ -123,27 +138,40 @@ Deno.serve(async (req) => {
         .single()
 
       if (prevV && prevV.used_count > 0) {
-        await supabase
+        const { error: swapDecrErr } = await supabase
           .from('vouchers')
           .update({ used_count: prevV.used_count - 1 })
           .eq('id', prevV.id)
+        if (swapDecrErr) console.error('Gagal decrement voucher lama:', swapDecrErr.message)
       }
     }
 
     // Increment used_count hanya jika bukan voucher yang sama
     if (!isSameVoucher) {
-      await supabase
+      const { error: incrementErr } = await supabase
         .from('vouchers')
         .update({ used_count: voucher.used_count + 1 })
         .eq('id', voucher.id)
+      if (incrementErr) {
+        return new Response(
+          JSON.stringify({ error: 'Gagal memperbarui kuota voucher' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
-    const amount         = consultation.amount ?? 500000
+    const amount = consultation.amount
+    if (amount == null) {
+      return new Response(
+        JSON.stringify({ error: 'Data konsultasi tidak memiliki nilai amount' }),
+        { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     const discountAmount = Math.round(amount * voucher.discount_percent / 100)
     const finalAmount    = amount - discountAmount
 
     // Simpan ke consultation
-    await supabase
+    const { error: consultationErr } = await supabase
       .from('consultations')
       .update({
         voucher_code:     voucher.code,
@@ -151,6 +179,15 @@ Deno.serve(async (req) => {
         discount_amount:  discountAmount,
       })
       .eq('order_id', order_id)
+    if (consultationErr) {
+      console.error('CRITICAL: used_count incremented but consultation update failed', {
+        order_id, voucherId: voucher.id,
+      })
+      return new Response(
+        JSON.stringify({ error: 'Gagal menyimpan voucher ke konsultasi' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     return new Response(
       JSON.stringify({
