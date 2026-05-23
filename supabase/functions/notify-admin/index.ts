@@ -28,10 +28,11 @@ Deno.serve(async (req) => {
 
     // Jika 100% voucher, update payment_status ke pending_verification
     if (voucher_used) {
-      await supabase
+      const { error: updateStatusErr } = await supabase
         .from('consultations')
         .update({ payment_status: 'pending_verification' })
         .eq('order_id', order_id)
+      if (updateStatusErr) console.error('payment_status update failed:', updateStatusErr.message)
     }
 
     const { data: consultation } = await supabase
@@ -97,7 +98,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('Unhandled error:', (err as Error).message)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: (err as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
