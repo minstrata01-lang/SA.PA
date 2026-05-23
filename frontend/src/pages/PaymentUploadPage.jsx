@@ -23,7 +23,9 @@ function PaymentUploadPage() {
 
   const { reviewData, orderId } = location.state || {};
 
-  const discountAmount = reviewData?.discount_amount ?? null
+  const discountAmount = reviewData?.discount_amount != null
+    ? Number(reviewData.discount_amount)
+    : null
   const finalAmount    = discountAmount != null
     ? (BANK_INFO.amount - discountAmount)
     : BANK_INFO.amount
@@ -155,9 +157,9 @@ function PaymentUploadPage() {
                 { label: 'Diskon Voucher', value: `-Rp ${discountAmount.toLocaleString('id-ID')}`, highlight: true },
               ] : []),
               { label: 'Total Transfer', value: `Rp ${finalAmount.toLocaleString('id-ID')}`, bold: true },
-            ].map((row, i) => (
+            ].map((row) => (
               <div
-                key={i}
+                key={row.label}
                 className="grid grid-cols-[130px_1fr] items-center"
                 style={{ borderTop: i !== 0 ? `1px solid ${rule}` : 'none' }}
               >
