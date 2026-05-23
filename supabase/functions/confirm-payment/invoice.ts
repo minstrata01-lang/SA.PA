@@ -229,8 +229,9 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
       width: mR - mL, height: rH,
       color: grayLight,
     })
+    const discLabel = discountPercent != null ? `Diskon Voucher (${discountPercent}%)` : 'Diskon Voucher'
     const discRow: [string, number][] = [
-      [`Diskon Voucher (${discountPercent}%)`, c0 + 8],
+      [discLabel, c0 + 8],
       [`-${formattedDiscount}`,                c1 + 8],
       ['1',                                    c2 + 8],
       [`-${formattedDiscount}`,                c3 + 8],
@@ -244,7 +245,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   }
 
   // Table bottom border
-  const tBotY = r1Y - rH + 5
+  const tBotY = formattedDiscount != null ? r1Y - 2 * rH + 5 : r1Y - rH + 5
   page.drawLine({
     start: { x: mL, y: tBotY },
     end:   { x: mR, y: tBotY },
@@ -338,7 +339,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
     x: (width - tyW) / 2, y: 58,
     size: 9, font: fontBold, color: navy,
   })
-  const copyText = '2026 SAPA - PT Stratalift Solusi Indonesia'
+  const copyText = `${yyyy} SAPA - PT Stratalift Solusi Indonesia`
   const copyW    = fontRegular.widthOfTextAtSize(copyText, 7.5)
   page.drawText(copyText, {
     x: (width - copyW) / 2, y: 43,
