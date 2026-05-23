@@ -12,6 +12,17 @@ const muted  = "rgba(0,61,107,0.5)";
 const rule   = "rgba(0,61,107,0.1)";
 const EASE   = [0.22, 1, 0.36, 1];
 
+const CATEGORY_MAP = {
+  low_rise:        "Low-rise Building (Bangunan 1-4 Lantai)",
+  mid_rise:        "Mid-rise Building (Bangunan 5-10 Lantai)",
+  high_rise:       "High-rise Building (Bangunan di atas 10 Lantai)",
+  rumah_singgah:   "Rumah Tinggal",
+  work_shop:       "Workshop",
+  jembatan:        "Jembatan",
+  dermaga:         "Dermaga",
+  kawasan_tambang: "Kawasan Tambang",
+};
+
 const totalSteps = 2;
 
 function ConsultationForm({ onBackToIntro }) {
@@ -73,11 +84,11 @@ function ConsultationForm({ onBackToIntro }) {
     setStep(2);
   };
 
-  const handlePreAssessment = async () => {
+  const handlePreAssessment = async (projectDetails) => {
     const { fullName, email, phone, selectedCategories } = formData;
 
     const { data, error } = await supabase.functions.invoke("create-consultation", {
-      body: { fullName, email, phone, selectedCategories, location: formData.location },
+      body: { fullName, email, phone, selectedCategories, location: formData.location, projectDetails },
     });
 
     if (error) throw error;
@@ -93,9 +104,10 @@ function ConsultationForm({ onBackToIntro }) {
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      const orderId = await handlePreAssessment();
-      const selectedLabels = selected.join(", ");
+      // Map ID kategori ke label yang terbaca manusia
+      const selectedLabels = selected.map((id) => CATEGORY_MAP[id] || id).join(", ");
       const projectDetails = formData.projectDetails?.trim() || [selectedLabels, description].filter(Boolean).join(" - ").trim();
+      const orderId = await handlePreAssessment(projectDetails);
 
       navigate("/preassessment/review-confirmation", {
         state: {

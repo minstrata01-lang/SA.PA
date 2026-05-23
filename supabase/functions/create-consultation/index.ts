@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { fullName, email, phone, selectedCategories, location } = await req.json()
+    const { fullName, email, phone, selectedCategories, location, projectDetails } = await req.json()
 
     if (!fullName || !email || !phone) {
       return new Response(
@@ -93,12 +93,13 @@ Deno.serve(async (req: Request) => {
       const { error: consultError } = await supabase
         .from('consultations')
         .insert([{
-          order_id: orderId,
-          client_id: clientId,
-          payment_status: 'pending',
-          session_status: 'inactive',
-          selected_categories: selectedCategories ?? [],
-          location: location ?? null,
+          order_id:        orderId,
+          client_id:       clientId,
+          payment_status:  'pending',
+          session_status:  'inactive',
+          amount:          500000,
+          location:        location   ?? null,
+          project_details: projectDetails || null,
         }])
 
       if (!consultError) {
