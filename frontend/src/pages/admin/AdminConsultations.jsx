@@ -159,10 +159,12 @@ export default function AdminConsultations() {
   }, [activeTab, consultations]);
 
   const stats = useMemo(() => ({
-    total:   consultations.length,
-    active:  consultations.filter((c) => c.session_status === 'active').length,
-    used:    consultations.filter((c) => c.session_status === 'used').length,
-    pending: consultations.filter((c) => c.payment_status === 'pending_verification').length,
+    total:         consultations.length,
+    active:        consultations.filter((c) => c.session_status === 'active').length,
+    used:          consultations.filter((c) => c.session_status === 'used').length,
+    pending:       consultations.filter((c) => c.payment_status === 'pending_verification').length,
+    voucherCount:  consultations.filter((c) => Boolean(c.voucher_code)).length,
+    totalDiscount: consultations.reduce((sum, c) => sum + (Number(c.discount_amount) || 0), 0),
   }), [consultations]);
 
   const updateSessionStatus = async (id, newStatus) => {
@@ -297,6 +299,30 @@ export default function AdminConsultations() {
       accent: '#E8920A',
       bg: 'rgba(232,146,10,0.08)',
     },
+    {
+      label: 'Voucher Dipakai',
+      value: stats.voucherCount,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+          <path d="M13 5v2M13 17v2M13 11v2"/>
+        </svg>
+      ),
+      accent: '#7c3aed',
+      bg: 'rgba(124,58,237,0.08)',
+    },
+    {
+      label: 'Total Diskon',
+      value: `Rp ${stats.totalDiscount.toLocaleString('id-ID')}`,
+      small: true,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      ),
+      accent: '#065f46',
+      bg: 'rgba(5,150,105,0.08)',
+    },
   ];
 
   return (
@@ -336,8 +362,8 @@ export default function AdminConsultations() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STAT_CARDS.map(({ label, value, icon, accent, bg }) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {STAT_CARDS.map(({ label, value, icon, accent, bg, small }) => (
           <AdminCard key={label}>
             <div className="p-5 flex items-center gap-4">
               <div
@@ -354,7 +380,7 @@ export default function AdminConsultations() {
                   {label}
                 </p>
                 <p
-                  className="text-3xl font-bold mt-0.5 leading-none"
+                  className={`${small ? 'text-xl' : 'text-3xl'} font-bold mt-0.5 leading-none`}
                   style={{ color: accent, fontFamily: "'Poppins', sans-serif" }}
                 >
                   {value}
@@ -416,7 +442,7 @@ export default function AdminConsultations() {
             <table className="w-full min-w-[1060px] text-left text-sm">
               <thead>
                 <tr style={{ background: 'rgba(0,61,107,0.04)', borderBottom: '1px solid rgba(0,61,107,0.08)' }}>
-                  {['No', 'Client', 'No. HP', 'Lokasi', 'Tanggal', 'Status Sesi', 'Konsultan', 'Status Bayar', 'Bukti', 'Aksi Bayar', 'Aksi'].map((h) => (
+                  {['No', 'Client', 'No. HP', 'Lokasi', 'Tanggal', 'Status Sesi', 'Konsultan', 'Voucher', 'Status Bayar', 'Bukti', 'Aksi Bayar', 'Aksi'].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3.5 text-xs font-bold uppercase tracking-widest"
@@ -496,6 +522,21 @@ export default function AdminConsultations() {
                           ))}
                         </select>
                       </td>
+                      {/* Voucher */}
+                      <td className="px-5 py-4">
+                        {item.voucher_code ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
+                            style={{ background: 'rgba(124,58,237,0.1)', color: '#6d28d9', border: '1px solid rgba(124,58,237,0.2)' }}
+                          >
+                            🎟️ {item.voucher_code}
+                            {item.discount_percent ? ` (${item.discount_percent}%)` : ''}
+                          </span>
+                        ) : (
+                          <span className="text-xs" style={{ color: muted }}>-</span>
+                        )}
+                      </td>
+
                       {/* Status Bayar */}
                       <td className="px-5 py-4">
                         <span
