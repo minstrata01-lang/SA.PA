@@ -74,11 +74,18 @@ Deno.serve(async (req) => {
       const clientEmail = client?.email        || null
       const clientPhone = client?.phone_number || null
 
+      // Deteksi apakah ini kasus voucher 100% (tidak ada pembayaran tunai)
+      // Jika ya, WA ke client sudah dikirim oleh notify-admin saat voucher digunakan
+      const isFullVoucher = consultation.discount_amount != null &&
+        Number(consultation.discount_amount) >= Number(consultation.amount || 0)
+
       // Kirim email via Resend
       if (clientEmail) {
         try {
           const subject = action === 'confirm'
-            ? `Invoice & Konfirmasi Pembayaran — Order ${consultation.order_id}`
+            ? isFullVoucher
+              ? `Konfirmasi Sesi Konsultasi — Order ${consultation.order_id}`
+              : `Invoice & Konfirmasi Pembayaran — Order ${consultation.order_id}`
             : `Pembayaran Ditolak — Order ${consultation.order_id}`
 
           let attachments: Array<{ filename: string; content: string }> = []
@@ -123,16 +130,23 @@ Deno.serve(async (req) => {
           }
 
           const invoiceNote = attachments.length > 0
-            ? '<p>Invoice resmi terlampir pada email ini sebagai bukti pembayaran.</p>'
+            ? '<p>Invoice resmi terlampir pada email ini sebagai bukti transaksi Anda.</p>'
             : ''
 
           const html = action === 'confirm'
-            ? `<h2>Pembayaran Dikonfirmasi</h2>
-               <p>Halo <strong>${clientName}</strong>,</p>
-               <p>Pembayaran Anda untuk order <strong>${consultation.order_id}</strong> telah dikonfirmasi.</p>
-               ${invoiceNote}
-               <p>Konsultan kami akan segera menghubungi Anda melalui WhatsApp.</p>
-               <p>Terima kasih telah menggunakan layanan SAPA.</p>`
+            ? isFullVoucher
+              ? `<h2>Sesi Konsultasi Dikonfirmasi</h2>
+                 <p>Halo <strong>${clientName}</strong>,</p>
+                 <p>Sesi konsultasi Anda untuk order <strong>${consultation.order_id}</strong> telah dikonfirmasi oleh tim kami.</p>
+                 ${invoiceNote}
+                 <p>Konsultan kami akan segera menghubungi Anda melalui WhatsApp.</p>
+                 <p>Terima kasih telah menggunakan layanan SAPA.</p>`
+              : `<h2>Pembayaran Dikonfirmasi</h2>
+                 <p>Halo <strong>${clientName}</strong>,</p>
+                 <p>Pembayaran Anda untuk order <strong>${consultation.order_id}</strong> telah dikonfirmasi.</p>
+                 ${invoiceNote}
+                 <p>Konsultan kami akan segera menghubungi Anda melalui WhatsApp.</p>
+                 <p>Terima kasih telah menggunakan layanan SAPA.</p>`
             : `<h2>Pembayaran Ditolak</h2>
                <p>Halo <strong>${clientName}</strong>,</p>
                <p>Maaf, pembayaran Anda untuk order <strong>${consultation.order_id}</strong> tidak dapat dikonfirmasi.</p>
@@ -161,7 +175,10 @@ Deno.serve(async (req) => {
       }
 
       // Kirim WA via Fonnte ke user
-      if (clientPhone) {
+      // Skip WA confirm untuk voucher 100% — client sudah dapat WA dari notify-admin
+      // saat voucher digunakan. Tetap kirim WA untuk action 'reject' agar client tahu.
+      const shouldSendWA = action === 'reject' || !isFullVoucher
+      if (clientPhone && shouldSendWA) {
         try {
           const formattedPhone = clientPhone.startsWith('0')
             ? '62' + clientPhone.slice(1)

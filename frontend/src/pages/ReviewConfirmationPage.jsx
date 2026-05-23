@@ -21,6 +21,7 @@ function ReviewConfirmationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isProceeding,        setIsProceeding]        = useState(false)
   const [voucherCode,         setVoucherCode]         = useState('')
   const [voucherResult,       setVoucherResult]       = useState(null)
   const [voucherError,        setVoucherError]        = useState('')
@@ -122,6 +123,9 @@ function ReviewConfirmationPage() {
   }
 
   const handleProceedToPayment = async () => {
+    if (isProceeding) return   // cegah double-click
+    setIsProceeding(true)
+
     const isFree = voucherResult?.final_amount === 0
 
     if (isFree) {
@@ -139,7 +143,7 @@ function ReviewConfirmationPage() {
         )
       } catch {}
       navigate('/payment/pending', { state: { orderId: reviewData.orderId, reviewData } })
-      return
+      return  // navigasi terjadi, setIsProceeding(false) tidak perlu
     }
 
     const updatedReviewData = voucherResult
@@ -155,6 +159,7 @@ function ReviewConfirmationPage() {
     navigate('/payment/upload', {
       state: { reviewData: updatedReviewData, orderId: reviewData.orderId },
     })
+    // navigasi terjadi, setIsProceeding(false) tidak diperlukan
   }
 
   return (
@@ -317,19 +322,21 @@ function ReviewConfirmationPage() {
           <button
             type="button"
             onClick={handleProceedToPayment}
-            disabled={!isConfirmed}
+            disabled={!isConfirmed || isProceeding}
             className="rounded-full font-semibold text-white"
             style={{
               height: 46, paddingLeft: 24, paddingRight: 24,
-              background: !isConfirmed ? "rgba(217,119,6,0.4)" : orange,
+              background: !isConfirmed || isProceeding ? "rgba(217,119,6,0.4)" : orange,
               border: "none", fontSize: 14, fontFamily: "'Manrope', sans-serif",
-              cursor: !isConfirmed ? "not-allowed" : "pointer",
+              cursor: !isConfirmed || isProceeding ? "not-allowed" : "pointer",
               transition: "background 0.2s ease",
             }}
           >
-            {voucherResult?.final_amount === 0
-              ? 'Konfirmasi Tanpa Pembayaran →'
-              : 'Lanjut ke Pembayaran →'}
+            {isProceeding
+              ? 'Memproses...'
+              : voucherResult?.final_amount === 0
+                ? 'Konfirmasi Tanpa Pembayaran →'
+                : 'Lanjut ke Pembayaran →'}
           </button>
         </motion.div>
       </div>
