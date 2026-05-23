@@ -23,6 +23,11 @@ function PaymentUploadPage() {
 
   const { reviewData, orderId } = location.state || {};
 
+  const discountAmount = reviewData?.discount_amount ?? null
+  const finalAmount    = discountAmount != null
+    ? (BANK_INFO.amount - discountAmount)
+    : BANK_INFO.amount
+
   const [selectedFile,  setSelectedFile]  = useState(null);
   const [preview,       setPreview]       = useState(null);
   const [isUploading,   setIsUploading]   = useState(false);
@@ -142,34 +147,46 @@ function PaymentUploadPage() {
           {/* Bank info */}
           <div className="flex flex-col gap-0 mb-8" style={{ border: `1px solid ${rule}` }}>
             {[
-              { label: "Bank",          value: BANK_INFO.bankName },
-              { label: "No. Rekening",  value: BANK_INFO.accountNumber, copyable: true },
-              { label: "Atas Nama",     value: BANK_INFO.accountHolder },
-              { label: "Nominal",       value: `Rp ${BANK_INFO.amount.toLocaleString("id-ID")}` },
+              { label: 'Bank',          value: BANK_INFO.bankName },
+              { label: 'No. Rekening',  value: BANK_INFO.accountNumber, copyable: true },
+              { label: 'Atas Nama',     value: BANK_INFO.accountHolder },
+              ...(discountAmount != null ? [
+                { label: 'Harga Normal',   value: `Rp ${BANK_INFO.amount.toLocaleString('id-ID')}` },
+                { label: 'Diskon Voucher', value: `-Rp ${discountAmount.toLocaleString('id-ID')}`, highlight: true },
+              ] : []),
+              { label: 'Total Transfer', value: `Rp ${finalAmount.toLocaleString('id-ID')}`, bold: true },
             ].map((row, i) => (
               <div
                 key={i}
                 className="grid grid-cols-[130px_1fr] items-center"
-                style={{ borderTop: i !== 0 ? `1px solid ${rule}` : "none" }}
+                style={{ borderTop: i !== 0 ? `1px solid ${rule}` : 'none' }}
               >
-                <p className="px-4 py-3 text-xs font-bold tracking-[0.1em] uppercase" style={{ color: muted, fontFamily: "'Manrope', sans-serif", background: "rgba(0,61,107,0.025)" }}>
+                <p className="px-4 py-3 text-xs font-bold tracking-[0.1em] uppercase"
+                   style={{ color: muted, fontFamily: "'Manrope', sans-serif", background: 'rgba(0,61,107,0.025)' }}>
                   {row.label}
                 </p>
                 <div className="px-4 py-3 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>{row.value}</p>
+                  <p className="text-sm font-semibold"
+                     style={{
+                       color: row.highlight ? '#065f46' : blue,
+                       fontFamily: "'Manrope', sans-serif",
+                       fontWeight: row.bold ? 700 : 600,
+                     }}>
+                    {row.value}
+                  </p>
                   {row.copyable && (
                     <button
                       type="button"
                       onClick={handleCopy}
                       className="text-xs font-bold rounded-full px-3 py-1 shrink-0"
                       style={{
-                        background: copied ? "rgba(0,61,107,0.08)" : "rgba(217,119,6,0.1)",
+                        background: copied ? 'rgba(0,61,107,0.08)' : 'rgba(217,119,6,0.1)',
                         color: copied ? blue : orange,
-                        border: "none", cursor: "pointer", fontFamily: "'Manrope', sans-serif",
-                        transition: "all 0.2s",
+                        border: 'none', cursor: 'pointer', fontFamily: "'Manrope', sans-serif",
+                        transition: 'all 0.2s',
                       }}
                     >
-                      {copied ? "Tersalin ✓" : "Salin"}
+                      {copied ? 'Tersalin ✓' : 'Salin'}
                     </button>
                   )}
                 </div>
