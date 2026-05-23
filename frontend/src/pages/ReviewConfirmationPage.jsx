@@ -104,7 +104,7 @@ function ReviewConfirmationPage() {
     }
   }
 
-  const handleRemoveVoucher = async () => {
+  const handleRemoveVoucher = () => {
     fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-voucher`,
       {
@@ -204,14 +204,18 @@ function ReviewConfirmationPage() {
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ duration: 0.5, ease: EASE, delay: 0.15 }}
         >
-          <p className="text-xs font-bold tracking-[0.12em] uppercase mb-3"
-             style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}>
+          <label
+            htmlFor="voucher-input"
+            className="text-xs font-bold tracking-[0.12em] uppercase mb-3"
+            style={{ color: muted, fontFamily: "'Manrope', sans-serif", display: 'block' }}
+          >
             Kode Voucher <span style={{ color: orange }}>(Opsional)</span>
-          </p>
+          </label>
 
           {!voucherResult ? (
             <div className="flex gap-2">
               <input
+                id="voucher-input"
                 type="text"
                 value={voucherCode}
                 onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError('') }}
