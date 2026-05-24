@@ -103,7 +103,7 @@ export default function Team() {
                     onMouseLeave={() => setUserPaused(false)}
                 >
                     <div
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                         style={{ gap: "1px", background: rule }}
                     >
                         {loading ? (

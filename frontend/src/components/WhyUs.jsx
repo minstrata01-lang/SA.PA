@@ -130,7 +130,7 @@ function WhyCard({ icon, num, title, body, index }) {
 
 export default function WhyUs() {
     return (
-        <section className="py-14 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-white">
+        <section className="py-12 sm:py-14 md:py-16 xl:py-20 px-4 sm:px-6 md:px-8 bg-white">
             <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
                 {/* Header */}
@@ -167,7 +167,7 @@ export default function WhyUs() {
                 <div className="mt-8 h-px" style={{ background: rule }} />
 
                 {/* Cards grid */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                     {items.map((it, i) => (
                         <WhyCard key={i} {...it} index={i} />
                     ))}

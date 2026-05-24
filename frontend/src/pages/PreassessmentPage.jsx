@@ -43,7 +43,7 @@ export default function PreassessmentPage() {
         {/* ══════════════════════════════════════════
             HERO
         ══════════════════════════════════════════ */}
-        <section className="relative pt-28 pb-14 bg-white overflow-hidden">
+        <section className="relative pt-20 sm:pt-24 xl:pt-28 pb-10 xl:pb-14 bg-white overflow-hidden">
 
           {/* Dot grid texture */}
           <div
@@ -85,7 +85,7 @@ export default function PreassessmentPage() {
 
             {/* Breadcrumb */}
             <motion.div
-              className="flex items-center gap-2 mb-12"
+              className="flex items-center gap-2 mb-7 xl:mb-12"
               variants={fadeInVariants}
               initial="hidden"
               animate="visible"
@@ -144,7 +144,7 @@ export default function PreassessmentPage() {
 
                 <motion.h1
                   className="font-bold-hero leading-[1.05] tracking-[-0.03em]"
-                  style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.2rem)", color: blue }}
+                  style={{ fontSize: "clamp(2rem, 4.2vw, 4.2rem)", color: blue }}
                   variants={itemVariants}
                 >
                   Kenali kondisi<br />

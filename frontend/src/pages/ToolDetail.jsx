@@ -88,7 +88,7 @@ export default function ToolDetail() {
             {/* ── Hero band — dark navy ── */}
             <div
                 className="relative overflow-hidden"
-                style={{ background: navy, paddingTop: "7rem", paddingBottom: "3rem" }}
+                style={{ background: navy, paddingTop: "5.5rem", paddingBottom: "2.5rem" }}
             >
                 {/* Subtle grid texture */}
                 <div
@@ -140,7 +140,7 @@ export default function ToolDetail() {
                         >
                             <h1
                                 className="font-bold-hero tracking-[-0.03em] text-white"
-                                style={{ fontSize: "clamp(2rem, 4.5vw, 4rem)", lineHeight: 1.12, maxWidth: 800 }}
+                                style={{ fontSize: "clamp(1.8rem, 3.8vw, 4rem)", lineHeight: 1.12, maxWidth: 800 }}
                             >
                                 {tool.name}
                             </h1>
@@ -175,7 +175,7 @@ export default function ToolDetail() {
             </div>
 
             {/* ── Content ── */}
-            <div className="px-4 sm:px-6 md:px-8 py-16 sm:py-20">
+            <div className="px-4 sm:px-6 md:px-8 py-10 sm:py-14 xl:py-20">
                 <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
                     {/* Two-column: description + image */}

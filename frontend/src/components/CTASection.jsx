@@ -26,7 +26,7 @@ export default function CTASection() {
     return (
         <section
             ref={sectionRef}
-            className="relative overflow-hidden py-14 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8"
+            className="relative overflow-hidden py-12 sm:py-14 md:py-16 xl:py-20 px-4 sm:px-6 md:px-8"
             style={{ background: navy }}
         >
             {/* Subtle large-scale texture — diagonal grid lines */}
@@ -70,7 +70,7 @@ export default function CTASection() {
                 <motion.h2
                     variants={itemVariants}
                     className="font-bold-hero leading-[1.08] tracking-[-0.03em] text-white"
-                    style={{ fontSize: "clamp(2.2rem, 4.5vw, 4rem)" }}
+                    style={{ fontSize: "clamp(1.8rem, 3.8vw, 4rem)" }}
                 >
                     Masih ragu? Kami siap{" "}
                     <br className="hidden sm:block" />

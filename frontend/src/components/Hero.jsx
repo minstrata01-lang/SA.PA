@@ -211,14 +211,14 @@ export default function Hero() {
 
             {/* TEXT CONTENT — z-index: 10 */}
             <div
-                className="flex-1 flex flex-col justify-center px-4 sm:px-6 md:px-8 pt-[100px] sm:pt-[108px] pb-2 sm:pb-4"
+                className="flex-1 flex flex-col justify-center px-4 sm:px-6 md:px-8 pt-[88px] sm:pt-[96px] xl:pt-[104px] pb-1 sm:pb-2 xl:pb-4"
                 style={{ position: "relative", zIndex: 10, minHeight: 0 }}
             >
                 <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%" }}>
 
                     <motion.p
                         variants={fadeUp(0.05)} initial="hidden" animate="visible"
-                        className="text-[10px] font-bold tracking-[0.28em] uppercase mb-3 sm:mb-5"
+                        className="text-[10px] font-bold tracking-[0.28em] uppercase mb-2 sm:mb-3 xl:mb-5"
                         style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}
                     >
                         Structural & Geothecnical
@@ -226,21 +226,21 @@ export default function Hero() {
 
                     <motion.div
                         variants={fadeUp(0.12)} initial="hidden" animate="visible"
-                        className="mb-3 sm:mb-5"
+                        className="mb-2 sm:mb-3 xl:mb-5"
                     >
                         <h1
                             className="font-bold-hero tracking-[-0.03em] m-0 p-0"
-                            style={{ fontSize: "clamp(1.75rem, 5.5vw, 4.4rem)", lineHeight: 1.12, color: blue }}
+                            style={{ fontSize: "clamp(1.5rem, 4.2vw, 4.4rem)", lineHeight: 1.12, color: blue }}
                         >
                             Diagnosis tepat untuk
                         </h1>
 
-                        <div className="overflow-hidden" style={{ padding: "0.12em 0" }} aria-live="polite">
+                        <div className="overflow-hidden" style={{ padding: "0.1em 0" }} aria-live="polite">
                             <AnimatePresence mode="wait" initial={false}>
                                 <motion.p
                                     key={wordKey}
                                     className="font-bold-hero tracking-[-0.03em] m-0"
-                                    style={{ fontSize: "clamp(1.75rem, 5.5vw, 4.4rem)", lineHeight: 1.12, color: orange }}
+                                    style={{ fontSize: "clamp(1.5rem, 4.2vw, 4.4rem)", lineHeight: 1.12, color: orange }}
                                     initial={{ opacity: 0, y: 14 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -14 }}
@@ -253,7 +253,7 @@ export default function Hero() {
 
                         <p
                             className="font-bold-hero tracking-[-0.03em] m-0"
-                            style={{ fontSize: "clamp(1.75rem, 5.5vw, 4.4rem)", lineHeight: 1.12, color: blue }}
+                            style={{ fontSize: "clamp(1.5rem, 4.2vw, 4.4rem)", lineHeight: 1.12, color: blue }}
                         >
                             bangunan Anda.
                         </p>
@@ -261,7 +261,7 @@ export default function Hero() {
 
                     <motion.p
                         variants={fadeUp(0.22)} initial="hidden" animate="visible"
-                        className="text-sm leading-relaxed mb-3 sm:mb-5"
+                        className="text-sm leading-relaxed mb-2 sm:mb-3 xl:mb-5"
                         style={{ color: muted, fontFamily: "'Manrope', sans-serif", maxWidth: 460 }}
                     >
                         Kami membantu Anda memastikan penyebab masalah struktural dan memberikan
@@ -270,8 +270,8 @@ export default function Hero() {
 
                     <motion.div
                         variants={fadeUp(0.3)} initial="hidden" animate="visible"
-                        className="mb-4 sm:mb-6"
-                        style={{ borderTop: "1px solid rgba(0,61,107,0.1)", paddingTop: "0.85rem" }}
+                        className="mb-3 sm:mb-4 xl:mb-6"
+                        style={{ borderTop: "1px solid rgba(0,61,107,0.1)", paddingTop: "0.65rem" }}
                     >
                         <p
                             className="text-[10px] font-semibold tracking-[0.18em] uppercase mb-1"
@@ -282,7 +282,7 @@ export default function Hero() {
                         <div className="flex items-baseline gap-3 mb-1">
                             <span
                                 className="font-bold-hero leading-none"
-                                style={{ fontSize: "clamp(1.6rem, 6vw, 3rem)", color: orange, letterSpacing: "-0.03em" }}
+                                style={{ fontSize: "clamp(1.4rem, 4.5vw, 3rem)", color: orange, letterSpacing: "-0.03em" }}
                             >
                                 Rp500.000,-
                             </span>
@@ -313,7 +313,7 @@ export default function Hero() {
             {/* Trust strip */}
             <motion.div
                 variants={fadeUp(0.5)} initial="hidden" animate="visible"
-                className="border-t px-4 sm:px-6 md:px-8 py-3 sm:py-4"
+                className="border-t px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 xl:py-4"
                 style={{ borderColor: "rgba(0,61,107,0.1)", position: "relative", zIndex: 10, flexShrink: 0 }}
             >
                 <div

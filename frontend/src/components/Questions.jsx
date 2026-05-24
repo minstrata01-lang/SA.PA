@@ -115,7 +115,7 @@ export default function Questions() {
     const featured = cases.slice(0, 4);
 
     return (
-        <section className="py-14 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-white">
+        <section className="py-12 sm:py-14 md:py-16 xl:py-20 px-4 sm:px-6 md:px-8 bg-white">
             <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
                 {/* Header — two-column split (Arup style) */}
@@ -178,28 +178,28 @@ export default function Questions() {
                 >
                     {/* Card 1 — featured large (spans 2 cols, 2 rows) */}
                     {featured[0] && (
-                        <div className="md:col-span-2 md:row-span-2" style={{ minHeight: 480 }}>
+                        <div className="md:col-span-2 md:row-span-2" style={{ minHeight: 360 }}>
                             <CaseCard img={featured[0].cover_image_url} title={featured[0].title} description={featured[0].summary} to={`/case/${featured[0].slug}`} featured />
                         </div>
                     )}
 
                     {/* Card 2 — top right */}
                     {featured[1] && (
-                        <div style={{ minHeight: 230 }}>
+                        <div style={{ minHeight: 190 }}>
                             <CaseCard img={featured[1].cover_image_url} title={featured[1].title} description={featured[1].summary} to={`/case/${featured[1].slug}`} />
                         </div>
                     )}
 
                     {/* Card 3 — bottom right */}
                     {featured[2] && (
-                        <div style={{ minHeight: 230 }}>
+                        <div style={{ minHeight: 190 }}>
                             <CaseCard img={featured[2].cover_image_url} title={featured[2].title} description={featured[2].summary} to={`/case/${featured[2].slug}`} />
                         </div>
                     )}
 
                     {/* Card 4 — full width bottom row */}
                     {featured[3] && (
-                        <div className="md:col-span-3" style={{ minHeight: 240 }}>
+                        <div className="md:col-span-3" style={{ minHeight: 190 }}>
                             <CaseCard img={featured[3].cover_image_url} title={featured[3].title} description={featured[3].summary} to={`/case/${featured[3].slug}`} />
                         </div>
                     )}

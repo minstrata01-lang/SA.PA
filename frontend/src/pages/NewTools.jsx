@@ -154,7 +154,7 @@ export default function NewTools() {
     }
 
     return (
-        <div className="bg-white" style={{ paddingTop: "6.5rem" }}>
+        <div className="bg-white" style={{ paddingTop: "5.5rem" }}>
             <SEO
                 title="Alat & Peralatan Survei Struktural"
                 description="Kenali alat-alat profesional yang digunakan tim SA.PA dalam investigasi dan survei struktural bangunan, mulai dari total station hingga GPR."
@@ -179,14 +179,14 @@ export default function NewTools() {
                         <div className="mb-6">
                             <h1
                                 className="font-bold-hero tracking-[-0.03em] inline"
-                                style={{ fontSize: "clamp(2.6rem, 5vw, 5rem)", lineHeight: 1.15, color: blue }}
+                                style={{ fontSize: "clamp(2rem, 4.2vw, 4.4rem)", lineHeight: 1.15, color: blue }}
                             >
                                 Peralatan{" "}
                             </h1>
                             <span
                                 className="font-bold-hero tracking-[-0.03em] inline"
                                 style={{
-                                    fontSize: "clamp(2.6rem, 5vw, 5rem)",
+                                    fontSize: "clamp(2rem, 4.2vw, 4.4rem)",
                                     lineHeight: 1.15,
                                     background: orange,
                                     color: "#fff",

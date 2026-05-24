@@ -56,7 +56,7 @@ function CheckIcon({ highlighted }) {
 function PriceCard({ name, price, desc, list, highlight, badge, index }) {
     return (
         <motion.div
-            className="flex flex-col rounded-2xl p-8"
+            className="flex flex-col rounded-2xl p-6 xl:p-8"
             style={{
                 background: highlight ? blue : "#fff",
                 border: `1px solid ${highlight ? "transparent" : border}`,
@@ -146,7 +146,7 @@ function PriceCard({ name, price, desc, list, highlight, badge, index }) {
 
 export default function Pricing() {
     return (
-        <section className="py-24 px-4 sm:px-6 md:px-8 bg-[#f8fafc]">
+        <section className="py-14 sm:py-16 md:py-20 xl:py-24 px-4 sm:px-6 md:px-8 bg-[#f8fafc]">
             <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
                 {/* Section header */}

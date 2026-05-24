@@ -72,7 +72,7 @@ export default function Features({ embedded = false }) {
                     viewport={{ once: true, amount: 0.3 }}
                 >
                     <motion.h2
-                        className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-center text-[#003D6B] mb-4"
+                        className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl font-extrabold text-center text-[#003D6B] mb-4"
                         variants={headingItem}
                     >
                         Rekomendasi Layanan Sesuai Hasil Diagnosa
