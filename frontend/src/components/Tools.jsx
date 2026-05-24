@@ -4,45 +4,20 @@ import { useRef, useState, useEffect, useCallback } from "react";
 
 const MotionLink = motion(Link);
 import OptimizedImage from "./OptimizedImage";
-
-import imgHilti1000    from "../assets/toolsImage/scanning pembesian 3D, Hilti PS1000.webp";
-import imgWaterPass    from "../assets/toolsImage/Digital Water Pass.webp";
-import imgCoating      from "../assets/toolsImage/Coating Thickness Gauge.webp";
-import imgHilti200     from "../assets/toolsImage/Peralatan scan tulangan Hilti PS200.webp";
-import imgUltrasonic   from "../assets/toolsImage/Ultrasonic Thickness Gauge.webp";
-import imgHammer       from "../assets/toolsImage/Rebound Hammer (Schmidt Hammer).webp";
-import imgCanin        from "../assets/toolsImage/Proceq Canin.webp";
-import imgCoreDrill    from "../assets/toolsImage/Diamond Core Drill Machine (mesin bor coring beton).webp";
-import imgHardness     from "../assets/toolsImage/Hardness Brinell Test.webp";
-import imgLaser        from "../assets/toolsImage/Laser Particle Sizer ANALYSETTE 22 NeXT.webp";
-import imgUPV          from "../assets/toolsImage/Pengujian UPV Proceq PL200].webp";
-import imgTotalStation from "../assets/toolsImage/Total-Station-Nikon-Nivo-5C-Reflectorless-removebg-preview.webp";
+import { useTools } from "../hooks/useTools";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
 const muted  = "rgba(0,61,107,0.5)";
 const GAP    = 12; // px gap between slides
 
-const tools = [
-    { image: imgHilti1000,    category: "Corrosion & Mapping",      name: "Scanning Pembesian 3D (Hilti PS1000)",  description: "Pemindai 3D untuk memetakan jaringan tulangan secara menyeluruh tanpa pembongkaran." },
-    { image: imgCanin,        category: "Corrosion & Mapping",      name: "Proceq Canin+",                         description: "Alat half-cell untuk pemetaan potensi korosi tulangan beton secara presisi." },
-    { image: imgHilti200,     category: "Corrosion & Mapping",      name: "Scan Tulangan Hilti PS200",             description: "Covermeter portabel untuk menentukan posisi dan kedalaman tulangan tanpa merusak beton." },
-    { image: imgHammer,       category: "Strength & Integrity",     name: "Rebound Hammer (Schmidt Hammer)",       description: "Pengujian non-destruktif untuk estimasi kuat tekan beton di lapangan." },
-    { image: imgUPV,          category: "Strength & Integrity",     name: "Pengujian UPV Proceq PL200",            description: "Pulse velocity untuk menilai integritas beton dan mendeteksi retak internal." },
-    { image: imgUltrasonic,   category: "Strength & Integrity",     name: "Ultrasonic Thickness Gauge",           description: "Pengukuran ketebalan elemen struktur secara akurat dari satu sisi permukaan." },
-    { image: imgCoating,      category: "Strength & Integrity",     name: "Coating Thickness Gauge",               description: "Mengukur ketebalan lapisan pelindung pada permukaan logam dan beton." },
-    { image: imgCoreDrill,    category: "Strength & Integrity",     name: "Diamond Core Drill Machine",            description: "Mesin bor coring untuk mengambil sampel inti beton uji laboratorium." },
-    { image: imgHardness,     category: "Strength & Integrity",     name: "Hardness Brinell Test",                 description: "Pengujian kekerasan material baja dan logam struktural secara presisi." },
-    { image: imgWaterPass,    category: "Monitoring & Deformation", name: "Digital Water Pass",                    description: "Pemantauan kemiringan dan level struktur secara digital dengan akurasi tinggi." },
-    { image: imgLaser,        category: "Monitoring & Deformation", name: "Laser Particle Sizer ANALYSETTE 22",   description: "Analisis distribusi ukuran partikel tanah untuk investigasi geoteknik mendalam." },
-    { image: imgTotalStation, category: "Monitoring & Deformation", name: "Total Station Nikon Nivo 5C",           description: "Pengukuran koordinat dan deformasi struktur dengan akurasi submilimeter." },
-];
 
 const EASE     = [0.22, 1, 0.36, 1];
 const DURATION = 0.62;
 const AUTO_MS  = 3500; // auto-advance interval
 
 export default function Tools() {
+    const { data: tools, loading } = useTools();
     const [activeIdx, setActiveIdx] = useState(0);
     const [containerW, setContainerW] = useState(0);
     const [paused, setPaused]         = useState(false);
@@ -82,15 +57,15 @@ export default function Tools() {
     const startAuto = useCallback(() => {
         clearInterval(autoRef.current);
         autoRef.current = setInterval(() => {
-            setActiveIdx(i => (i + 1) % tools.length);
+            setActiveIdx(i => tools.length > 0 ? (i + 1) % tools.length : 0);
         }, AUTO_MS);
     }, []);
 
     useEffect(() => {
-        if (paused) { clearInterval(autoRef.current); return; }
+        if (paused || loading || tools.length === 0) { clearInterval(autoRef.current); return; }
         startAuto();
         return () => clearInterval(autoRef.current);
-    }, [paused, startAuto]);
+    }, [paused, loading, tools.length, startAuto]);
 
     /* ── Manual nav resets auto timer ── */
     const prev = () => {
@@ -185,6 +160,11 @@ export default function Tools() {
                 onMouseEnter={() => setPaused(true)}
                 onMouseLeave={() => setPaused(false)}
             >
+                {loading && (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: "rgba(0,61,107,0.15)", borderTopColor: blue }} />
+                    </div>
+                )}
                 {/* Left fade gradient — wide smooth easing, clears before active card */}
                 <div
                     className="absolute left-0 top-0 h-full pointer-events-none z-10"
@@ -247,12 +227,12 @@ export default function Tools() {
                                 transition={{ duration: DURATION, ease: EASE }}
                                 style={{ flexShrink: 0, overflow: "hidden" }}
                             >
-                                <Link to="/tool" style={{ textDecoration: "none", display: "block" }} className="group">
+                                <Link to={`/tool/${tool.slug}`} style={{ textDecoration: "none", display: "block" }} className="group">
 
                                     {/* Image */}
                                     <div className="relative overflow-hidden w-full" style={{ height: "clamp(200px, 26vw, 360px)" }}>
                                         <OptimizedImage
-                                            src={tool.image}
+                                            src={tool.thumbnail_url}
                                             alt={tool.name}
                                             className="absolute inset-0 w-full h-full object-cover"
                                             style={{
@@ -285,7 +265,7 @@ export default function Tools() {
                                                 transition={{ duration: 0.35 }}
                                                 style={{ fontFamily: "'Manrope', sans-serif" }}
                                             >
-                                                {tool.category}
+                                                {tool.tags?.[0] ?? ""}
                                             </motion.p>
                                             <motion.h3
                                                 className="font-bold leading-snug"

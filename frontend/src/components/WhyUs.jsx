@@ -22,7 +22,7 @@ const items = [
         icon: iconStandard,
         num: "02",
         title: "Sesuai Standar dan Peraturan yang Berlaku",
-        body: "Seluruh material dan metodologi kerja kami telah tersertifikasi dan memenuhi standar nasional Indonesia, menjamin keamanan jangka panjang serta kepatuhan hukum bagi aset properti Anda.",
+        body: "Seluruh material dan metodologi kerja kami telah memenuhi standar dan peraturan yang berlaku, menjamin keamanan jangka panjang serta kepatuhan hukum bagi aset properti Anda.",
     },
     {
         icon: iconEfficiency,
@@ -135,30 +135,28 @@ export default function WhyUs() {
 
                 {/* Header */}
                 <motion.div
-                    className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-0"
+                    className="flex flex-col gap-4 mb-0"
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.7, ease: EASE }}
                 >
-                    <div className="max-w-lg">
-                        <p
-                            className="text-[11px] font-bold tracking-[0.26em] uppercase mb-5"
-                            style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}
-                        >
-                            Mengapa Kami
-                        </p>
-                        <h2
-                            className="font-bold-hero text-shadow-bold leading-[1.08] tracking-[-0.03em]"
-                            style={{ fontSize: "clamp(2rem, 3.5vw, 3.2rem)", color: blue }}
-                        >
-                            Kepercayaan Anda adalah{" "}
-                            <span style={{ color: orange }}>fondasi</span> kami.
-                        </h2>
-                    </div>
                     <p
-                        className="text-base leading-relaxed max-w-xs pb-1"
+                        className="text-[11px] font-bold tracking-[0.26em] uppercase"
                         style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}
+                    >
+                        Mengapa Kami
+                    </p>
+                    <h2
+                        className="font-bold-hero text-shadow-bold leading-[1.08] tracking-[-0.03em]"
+                        style={{ fontSize: "clamp(2rem, 3.5vw, 3.2rem)", color: blue }}
+                    >
+                        Kepercayaan Anda adalah<br />
+                        <span style={{ color: orange }}>fondasi</span> kami.
+                    </h2>
+                    <p
+                        className="text-base leading-relaxed"
+                        style={{ color: muted, fontFamily: "'Manrope', sans-serif", maxWidth: 480 }}
                     >
                         Empat prinsip yang memandu setiap proyek dari diagnosis awal hingga laporan akhir.
                     </p>

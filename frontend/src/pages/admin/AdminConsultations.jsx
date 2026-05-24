@@ -61,7 +61,7 @@ function getPaymentStatusLabel(status) {
 function formatDate(value) {
   if (!value) return '-';
   return new Date(value).toLocaleString('id-ID', {
-    day: '2-digit', month: 'long', year: 'numeric',
+    day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
 }
@@ -117,7 +117,6 @@ export default function AdminConsultations() {
   const [loading, setLoading]             = useState(false);
   const [toast, setToast]                 = useState({ msg: '', type: 'success' });
   const [deletingId, setDeletingId]       = useState(null);
-  const [reportFiles, setReportFiles]     = useState([]);
   const [confirmingIds, setConfirmingIds] = useState(new Set());
 
   const showToast = (msg, type = 'success') => {
@@ -142,12 +141,7 @@ export default function AdminConsultations() {
     }
   }, []);
 
-  const fetchReports = useCallback(async () => {
-    const { data, error } = await supabase.storage.from('reports').list('');
-    if (!error) setReportFiles(data || []);
-  }, []);
-
-  useEffect(() => { fetchData(); fetchReports(); }, [fetchData, fetchReports]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const filteredConsultations = useMemo(() => {
     if (activeTab === 'pending_payment') return consultations.filter((c) => c.payment_status === 'pending_verification');
@@ -241,19 +235,6 @@ export default function AdminConsultations() {
     } finally {
       setConfirmingIds(prev => { const next = new Set(prev); next.delete(consultationId); return next; });
     }
-  };
-
-  const downloadReport = async (fileName) => {
-    const { data } = await supabase.storage.from('reports').createSignedUrl(fileName, 60);
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-  };
-
-  const generateReport = async () => {
-    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-report`, {
-      headers: { Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
-    });
-    const data = await res.json();
-    if (data.success) { showToast('Laporan berhasil dibuat!'); fetchReports(); }
   };
 
   const STAT_CARDS = [
@@ -445,7 +426,7 @@ export default function AdminConsultations() {
             <table className="w-full min-w-[1060px] text-left text-sm">
               <thead>
                 <tr style={{ background: 'rgba(0,61,107,0.04)', borderBottom: '1px solid rgba(0,61,107,0.08)' }}>
-                  {['No', 'Client', 'No. HP', 'Lokasi', 'Tanggal', 'Status Sesi', 'Konsultan', 'Voucher', 'Status Bayar', 'Bukti', 'Aksi Bayar', 'Aksi'].map((h) => (
+                  {['No', 'Klien', 'Telepon', 'Lokasi', 'Tanggal', 'Status Sesi', 'Konsultan', 'Voucher', 'Status Bayar', 'Pembayaran', 'Aksi'].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3.5 text-xs font-bold uppercase tracking-widest"
@@ -463,7 +444,7 @@ export default function AdminConsultations() {
                   return (
                     <tr
                       key={item.id}
-                      style={{ borderBottom: '1px solid rgba(0,61,107,0.06)' }}
+                      style={{ borderBottom: '1px solid rgba(0,61,107,0.06)', verticalAlign: 'middle' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,61,107,0.025)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
@@ -550,69 +531,54 @@ export default function AdminConsultations() {
                         </span>
                       </td>
 
-                      {/* Bukti Transfer */}
+                      {/* Pembayaran: bukti + konfirmasi/tolak dalam 1 kolom */}
                       <td className="px-5 py-4">
-                        {item.proof_url ? (
-                          <a
-                            href={item.proof_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-semibold"
-                            style={{ color: blue, textDecoration: 'none' }}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                            </svg>
-                            Lihat
-                          </a>
-                        ) : (
-                          <span className="text-xs" style={{ color: muted }}>-</span>
-                        )}
-                      </td>
-
-                      {/* Aksi Bayar */}
-                      <td className="px-5 py-4">
-                        {item.payment_status === 'pending_verification' ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handlePaymentAction(item.id, 'confirm')}
-                              disabled={confirmingIds.has(item.id)}
-                              className="inline-flex h-8 items-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-150 disabled:opacity-50"
-                              style={{
-                                color: '#065f46',
-                                background: 'rgba(5,150,105,0.1)',
-                                border: '1px solid rgba(5,150,105,0.25)',
-                                fontFamily: "'Manrope', sans-serif",
-                                cursor: confirmingIds.has(item.id) ? 'not-allowed' : 'pointer',
-                              }}
-                              onMouseEnter={e => { if (!confirmingIds.has(item.id)) e.currentTarget.style.background = 'rgba(5,150,105,0.2)'; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(5,150,105,0.1)'; }}
+                        <div className="flex flex-col gap-1.5">
+                          {item.proof_url && (
+                            <a
+                              href={item.proof_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-7 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold"
+                              style={{ color: blue, background: 'rgba(0,61,107,0.07)', border: `1px solid rgba(0,61,107,0.15)`, textDecoration: 'none', width: 'fit-content' }}
                             >
-                              {confirmingIds.has(item.id) ? 'Memproses…' : '✓ Konfirmasi'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handlePaymentAction(item.id, 'reject')}
-                              disabled={confirmingIds.has(item.id)}
-                              className="inline-flex h-8 items-center gap-1 rounded-lg px-3 text-xs font-semibold transition-all duration-150 disabled:opacity-50"
-                              style={{
-                                color: '#9f1239',
-                                background: 'rgba(190,18,60,0.08)',
-                                border: '1px solid rgba(190,18,60,0.2)',
-                                fontFamily: "'Manrope', sans-serif",
-                                cursor: confirmingIds.has(item.id) ? 'not-allowed' : 'pointer',
-                              }}
-                              onMouseEnter={e => { if (!confirmingIds.has(item.id)) e.currentTarget.style.background = 'rgba(190,18,60,0.15)'; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(190,18,60,0.08)'; }}
-                            >
-                              {confirmingIds.has(item.id) ? 'Memproses…' : '✕ Tolak'}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs" style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}>-</span>
-                        )}
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                              </svg>
+                              Bukti
+                            </a>
+                          )}
+                          {item.payment_status === 'pending_verification' && (
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handlePaymentAction(item.id, 'confirm')}
+                                disabled={confirmingIds.has(item.id)}
+                                className="inline-flex h-7 items-center rounded-lg px-2.5 text-xs font-semibold disabled:opacity-50"
+                                style={{ color: '#065f46', background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.25)', cursor: confirmingIds.has(item.id) ? 'not-allowed' : 'pointer' }}
+                                onMouseEnter={e => { if (!confirmingIds.has(item.id)) e.currentTarget.style.background = 'rgba(5,150,105,0.2)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(5,150,105,0.1)'; }}
+                              >
+                                {confirmingIds.has(item.id) ? '…' : '✓'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handlePaymentAction(item.id, 'reject')}
+                                disabled={confirmingIds.has(item.id)}
+                                className="inline-flex h-7 items-center rounded-lg px-2.5 text-xs font-semibold disabled:opacity-50"
+                                style={{ color: '#9f1239', background: 'rgba(190,18,60,0.08)', border: '1px solid rgba(190,18,60,0.2)', cursor: confirmingIds.has(item.id) ? 'not-allowed' : 'pointer' }}
+                                onMouseEnter={e => { if (!confirmingIds.has(item.id)) e.currentTarget.style.background = 'rgba(190,18,60,0.15)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(190,18,60,0.08)'; }}
+                              >
+                                {confirmingIds.has(item.id) ? '…' : '✕'}
+                              </button>
+                            </div>
+                          )}
+                          {!item.proof_url && item.payment_status !== 'pending_verification' && (
+                            <span className="text-xs" style={{ color: muted }}>-</span>
+                          )}
+                        </div>
                       </td>
 
                       <td className="px-5 py-4">
@@ -640,92 +606,6 @@ export default function AdminConsultations() {
             </table>
           )}
         </div>
-      </AdminCard>
-
-      {/* Laporan */}
-      <AdminCard>
-        <div
-          className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: '1px solid rgba(0,61,107,0.08)' }}
-        >
-          <h3
-            className="text-base font-bold"
-            style={{ color: blue, fontFamily: "'Poppins', sans-serif" }}
-          >
-            Laporan Harian
-          </h3>
-          <motion.button
-            type="button"
-            onClick={generateReport}
-            className="inline-flex h-9 items-center gap-2 rounded-xl px-4 text-sm font-bold text-white"
-            style={{
-              background: orange,
-              boxShadow: '0 4px 14px rgba(232,146,10,0.3)',
-              fontFamily: "'Manrope', sans-serif",
-            }}
-            whileHover={{ y: -1, boxShadow: '0 8px 20px rgba(232,146,10,0.4)' }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            Generate Sekarang
-          </motion.button>
-        </div>
-        {reportFiles.length === 0 ? (
-          <div className="flex min-h-36 flex-col items-center justify-center gap-1.5">
-            <p className="text-sm font-semibold" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>Belum ada laporan</p>
-            <p className="text-xs" style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}>Klik Generate Sekarang untuk membuat laporan terbaru.</p>
-          </div>
-        ) : (
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr style={{ background: 'rgba(0,61,107,0.04)', borderBottom: '1px solid rgba(0,61,107,0.08)' }}>
-                {['File', 'Tanggal', 'Aksi'].map((h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-xs font-bold uppercase tracking-widest"
-                    style={{ color: 'rgba(0,61,107,0.45)', fontFamily: "'Manrope', sans-serif" }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {reportFiles.map((file) => (
-                <tr
-                  key={file.name}
-                  style={{ borderBottom: '1px solid rgba(0,61,107,0.06)' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,61,107,0.025)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <td className="px-5 py-4 font-semibold" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>{file.name}</td>
-                  <td className="px-5 py-4 text-xs" style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}>
-                    {file.created_at ? new Date(file.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
-                  </td>
-                  <td className="px-5 py-4">
-                    <button
-                      type="button"
-                      onClick={() => downloadReport(file.name)}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all duration-150"
-                      style={{
-                        color: blue,
-                        background: 'rgba(0,61,107,0.07)',
-                        border: `1px solid ${border}`,
-                        fontFamily: "'Manrope', sans-serif",
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,61,107,0.13)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,61,107,0.07)'}
-                    >
-                      Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </AdminCard>
 
       {/* Toast */}
