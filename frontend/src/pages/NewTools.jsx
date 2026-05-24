@@ -14,6 +14,8 @@ const MotionLink = motion(Link);
 
 const EASE = [0.22, 1, 0.36, 1];
 
+const slugify = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
 /* ── Tool card — Arup "Our Work" editorial style ── */
 function ToolCard({ tool, index }) {
     const [hovered, setHovered] = useState(false);
@@ -26,7 +28,7 @@ function ToolCard({ tool, index }) {
             transition={{ duration: 0.6, ease: EASE, delay: (index % 3) * 0.08 }}
         >
             <MotionLink
-                to={`/tool/${tool.slug}`}
+                to={`/tool/${tool.slug || slugify(tool.name)}`}
                 className="relative block overflow-hidden"
                 style={{ textDecoration: "none" }}
                 whileHover="hover"

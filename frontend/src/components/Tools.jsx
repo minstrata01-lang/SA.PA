@@ -6,6 +6,8 @@ const MotionLink = motion(Link);
 import OptimizedImage from "./OptimizedImage";
 import { useTools } from "../hooks/useTools";
 
+const slugify = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
 const blue   = "#003D6B";
 const orange = "#D97706";
 const muted  = "rgba(0,61,107,0.5)";
@@ -227,7 +229,7 @@ export default function Tools() {
                                 transition={{ duration: DURATION, ease: EASE }}
                                 style={{ flexShrink: 0, overflow: "hidden" }}
                             >
-                                <Link to={`/tool/${tool.slug}`} style={{ textDecoration: "none", display: "block" }} className="group">
+                                <Link to={`/tool/${tool.slug || slugify(tool.name)}`} style={{ textDecoration: "none", display: "block" }} className="group">
 
                                     {/* Image */}
                                     <div className="relative overflow-hidden w-full" style={{ height: "clamp(200px, 26vw, 360px)" }}>

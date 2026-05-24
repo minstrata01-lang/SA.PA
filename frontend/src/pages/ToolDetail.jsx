@@ -24,13 +24,25 @@ export default function ToolDetail() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const toSlug = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         supabase
             .from('tools')
             .select('*')
             .eq('slug', slug)
             .eq('is_active', true)
             .maybeSingle()
-            .then(({ data }) => { setTool(data); setLoading(false); });
+            .then(({ data }) => {
+                if (data) { setTool(data); setLoading(false); return; }
+                // Fallback: match by slugified name (for tools with empty slug in DB)
+                supabase
+                    .from('tools')
+                    .select('*')
+                    .eq('is_active', true)
+                    .then(({ data: all }) => {
+                        setTool(all?.find(t => toSlug(t.name) === slug) ?? null);
+                        setLoading(false);
+                    });
+            });
     }, [slug]);
 
     if (loading) {
