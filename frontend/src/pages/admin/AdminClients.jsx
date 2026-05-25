@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../supabaseClient';
 
@@ -36,12 +36,16 @@ export default function AdminClients() {
   const [consultations, setConsultations] = useState([]);
   const [consultants,   setConsultants]   = useState([]);
   const [loading,       setLoading]       = useState(false);
-  const [toast,         setToast]         = useState({ msg: '', type: 'success' });
+  const [toast,         setToast]         = useState({ msg: '', type: 'success', id: 0 });
 
-  const showToast = (msg, type = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast({ msg: '', type: 'success' }), 2500);
-  };
+  const timerRef = useRef(null);
+  const showToast = useCallback((msg, type = 'success') => {
+    setToast({ msg, type, id: Date.now() });
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setToast({ msg: '', type: 'success', id: 0 }), 2500);
+  }, []);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -53,16 +57,18 @@ export default function AdminClients() {
           .order('created_at', { ascending: false }),
         supabase.from('consultants').select('id, name').eq('is_active', true),
       ]);
-      if (!cResult.error) setConsultations(cResult.data || []);
-      if (!consultResult.error) setConsultants(consultResult.data || []);
+      if (cResult.error) showToast(`Gagal memuat data: ${cResult.error.message}`, 'error');
+      else setConsultations(cResult.data || []);
+      if (consultResult.error) showToast(`Gagal memuat konsultan: ${consultResult.error.message}`, 'error');
+      else setConsultants(consultResult.data || []);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const assignConsultant = async (consultationId, consultantId) => {
+  const assignConsultant = useCallback(async (consultationId, consultantId) => {
     if (!consultantId) return;
     const { error } = await supabase
       .from('consultations')
@@ -76,7 +82,7 @@ export default function AdminClients() {
     } else {
       showToast(`Gagal assign konsultan: ${error.message}`, 'error');
     }
-  };
+  }, [showToast]);
 
   return (
     <motion.section
@@ -221,6 +227,7 @@ export default function AdminClients() {
                       {/* Konsultan */}
                       <td className="px-5 py-4">
                         <select
+                          aria-label={`Assign konsultan untuk ${client?.full_name || 'klien ini'}`}
                           value={item.consultant_id || ''}
                           onChange={(e) => assignConsultant(item.id, e.target.value)}
                           className="h-8 rounded-lg px-2.5 text-sm focus:outline-none cursor-pointer"
@@ -250,7 +257,7 @@ export default function AdminClients() {
       <AnimatePresence>
         {toast.msg && (
           <motion.div
-            key={toast.msg}
+            key={toast.id}
             className="fixed right-5 top-5 z-50 rounded-xl px-4 py-3 text-sm font-semibold shadow-xl flex items-center gap-2"
             style={{
               background: toast.type === 'error' ? '#fff1f2' : '#f0fdf4',
