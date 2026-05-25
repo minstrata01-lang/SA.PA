@@ -16,6 +16,16 @@ function IconClipboard() {
   );
 }
 
+function IconPersonCard() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2"/>
+      <circle cx="8" cy="12" r="2.5"/>
+      <path d="M13 10h5M13 14h3"/>
+    </svg>
+  );
+}
+
 function IconWrench() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -63,11 +73,12 @@ function IconLogout() {
 }
 
 const NAV_ITEMS = [
-  { to: '/admin/consultations', label: 'Konsultasi',  Icon: IconClipboard },
-  { to: '/admin/tools',         label: 'Tools',       Icon: IconWrench    },
-  { to: '/admin/cases',         label: 'Case Study',  Icon: IconFolder    },
-  { to: '/admin/consultants',   label: 'Konsultan',   Icon: IconUsers     },
-  { to: '/admin/vouchers',      label: 'Voucher',     Icon: IconTicket    },
+  { to: '/admin/consultations', label: 'Konsultasi',       Icon: IconClipboard  },
+  { to: '/admin/clients',       label: 'Manajemen Klien',  Icon: IconPersonCard },
+  { to: '/admin/tools',         label: 'Tools',            Icon: IconWrench     },
+  { to: '/admin/cases',         label: 'Case Study',       Icon: IconFolder     },
+  { to: '/admin/consultants',   label: 'Konsultan',        Icon: IconUsers      },
+  { to: '/admin/vouchers',      label: 'Voucher',          Icon: IconTicket     },
 ];
 
 const sidebarVariants = {
