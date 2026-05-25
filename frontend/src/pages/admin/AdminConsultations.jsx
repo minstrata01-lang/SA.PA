@@ -112,7 +112,6 @@ function PageHeader({ title, subtitle, action }) {
 
 export default function AdminConsultations() {
   const [consultations, setConsultations] = useState([]);
-  const [consultants, setConsultants]     = useState([]);
   const [activeTab, setActiveTab]         = useState('all');
   const [loading, setLoading]             = useState(false);
   const [toast, setToast]                 = useState({ msg: '', type: 'success' });
@@ -127,15 +126,11 @@ export default function AdminConsultations() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [cResult, consultResult] = await Promise.all([
-        supabase
-          .from('consultations')
-          .select('*, clients(full_name, email, phone_number), consultants(name, phone_number)')
-          .order('created_at', { ascending: false }),
-        supabase.from('consultants').select('*').eq('is_active', true),
-      ]);
+      const cResult = await supabase
+        .from('consultations')
+        .select('*, clients(full_name, email, phone_number)')
+        .order('created_at', { ascending: false });
       if (!cResult.error) setConsultations(cResult.data || []);
-      if (!consultResult.error) setConsultants(consultResult.data || []);
     } finally {
       setLoading(false);
     }
@@ -168,22 +163,6 @@ export default function AdminConsultations() {
       setConsultations((prev) => prev.map((c) => c.id === id ? { ...c, session_status: newStatus } : c));
     } else {
       showToast('Gagal memperbarui status.', 'error');
-    }
-  };
-
-  const assignConsultant = async (consultationId, consultantId) => {
-    if (!consultantId) return;
-    const { error } = await supabase
-      .from('consultations')
-      .update({ consultant_id: consultantId })
-      .eq('id', consultationId);
-    if (!error) {
-      showToast('Konsultan berhasil diassign!');
-      setConsultations((prev) =>
-        prev.map((c) => c.id === consultationId ? { ...c, consultant_id: consultantId } : c)
-      );
-    } else {
-      showToast(`Gagal assign konsultan: ${error.message}`, 'error');
     }
   };
 
@@ -426,7 +405,7 @@ export default function AdminConsultations() {
             <table className="w-full min-w-[1060px] text-left text-sm">
               <thead>
                 <tr style={{ background: 'rgba(0,61,107,0.04)', borderBottom: '1px solid rgba(0,61,107,0.08)' }}>
-                  {['No', 'Klien', 'Telepon', 'Lokasi', 'Tanggal', 'Status Sesi', 'Konsultan', 'Voucher', 'Status Bayar', 'Pembayaran', 'Aksi'].map((h) => (
+                  {['No', 'Klien', 'Telepon', 'Lokasi', 'Tanggal', 'Status Sesi', 'Voucher', 'Status Bayar', 'Pembayaran', 'Aksi'].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3.5 text-xs font-bold uppercase tracking-widest"
@@ -485,24 +464,6 @@ export default function AdminConsultations() {
                         >
                           {SESSION_STATUSES.map((s) => (
                             <option key={s.value} value={s.value}>{s.label}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-5 py-4">
-                        <select
-                          value={item.consultant_id || ''}
-                          onChange={(e) => assignConsultant(item.id, e.target.value)}
-                          className="h-8 rounded-lg px-2.5 text-sm focus:outline-none cursor-pointer"
-                          style={{
-                            color: blue,
-                            border: `1px solid ${border}`,
-                            background: 'rgba(0,61,107,0.04)',
-                            fontFamily: "'Manrope', sans-serif",
-                          }}
-                        >
-                          <option value="">Pilih Konsultan</option>
-                          {consultants.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </select>
                       </td>
