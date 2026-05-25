@@ -54,6 +54,33 @@ Deno.serve(async (req) => {
       )
     }
 
+    // ── Kembalikan kuota voucher jika pembayaran ditolak ─────────────────
+    if (action === 'reject') {
+      const { data: rejectedConsultation } = await supabase
+        .from('consultations')
+        .select('voucher_code')
+        .eq('id', consultation_id)
+        .single()
+
+      if (rejectedConsultation?.voucher_code) {
+        const { data: prevVoucher } = await supabase
+          .from('vouchers')
+          .select('id, used_count')
+          .ilike('code', rejectedConsultation.voucher_code)
+          .single()
+
+        if (prevVoucher && prevVoucher.used_count > 0) {
+          const { error: decrementErr } = await supabase
+            .from('vouchers')
+            .update({ used_count: prevVoucher.used_count - 1 })
+            .eq('id', prevVoucher.id)
+          if (decrementErr) {
+            console.error('Gagal decrement voucher saat reject:', decrementErr.message)
+          }
+        }
+      }
+    }
+
     // ── Background task: kirim email + WA ────────────────────────────────
     const sendNotifications = async () => {
       const { data: consultation, error: selectError } = await supabase

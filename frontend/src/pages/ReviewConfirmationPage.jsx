@@ -26,6 +26,7 @@ function ReviewConfirmationPage() {
   const [voucherResult,       setVoucherResult]       = useState(null)
   const [voucherError,        setVoucherError]        = useState('')
   const [isValidatingVoucher, setIsValidatingVoucher] = useState(false)
+  const [isRemovingVoucher,  setIsRemovingVoucher]  = useState(false)
 
   const reviewData = location.state?.reviewData;
   if (!reviewData) return <Navigate to="/layanan" replace />;
@@ -105,21 +106,27 @@ function ReviewConfirmationPage() {
     }
   }
 
-  const handleRemoveVoucher = () => {
-    fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-voucher`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ code: null, order_id: reviewData.orderId }),
-      }
-    ).catch(() => {})
+  const handleRemoveVoucher = async () => {
+    setIsRemovingVoucher(true)
+    try {
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-voucher`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ code: null, order_id: reviewData.orderId }),
+        }
+      )
+    } catch {
+      // best effort — still clear UI so user is not stuck
+    }
     setVoucherResult(null)
     setVoucherCode('')
     setVoucherError('')
+    setIsRemovingVoucher(false)
   }
 
   const handleProceedToPayment = async () => {
@@ -289,7 +296,13 @@ function ReviewConfirmationPage() {
                   <button
                     type="button"
                     onClick={handleRemoveVoucher}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', lineHeight: 0 }}
+                    disabled={isRemovingVoucher}
+                    style={{
+                      background: 'none', border: 'none', padding: '6px', lineHeight: 0,
+                      cursor: isRemovingVoucher ? 'not-allowed' : 'pointer',
+                      opacity: isRemovingVoucher ? 0.4 : 1,
+                      transition: 'opacity 0.15s',
+                    }}
                     title="Hapus voucher"
                     aria-label="Hapus voucher"
                   >
