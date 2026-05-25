@@ -145,6 +145,8 @@ export default function NewTools() {
         );
     }
 
+    console.log('[DEBUG tools]', allTools.map(t => ({ id: t.id, name: t.name, slug: t.slug, generated: slugify(t.name) })));
+
     if (error) {
         return (
             <div className="bg-white flex items-center justify-center" style={{ minHeight: '60vh', paddingTop: '5rem' }}>

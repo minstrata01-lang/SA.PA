@@ -157,7 +157,7 @@ function PaymentUploadPage() {
                 { label: 'Diskon Voucher', value: `-Rp ${discountAmount.toLocaleString('id-ID')}`, highlight: true },
               ] : []),
               { label: 'Total Transfer', value: `Rp ${finalAmount.toLocaleString('id-ID')}`, bold: true },
-            ].map((row) => (
+            ].map((row, i) => (
               <div
                 key={row.label}
                 className="grid grid-cols-[130px_1fr] items-center"
