@@ -36,6 +36,7 @@ const AdminCases         = lazy(() => import('./pages/admin/AdminCases'));
 const AdminCaseEditor    = lazy(() => import('./pages/admin/AdminCaseEditor'));
 const AdminConsultants   = lazy(() => import('./pages/admin/AdminConsultants'));
 const AdminVouchers     = lazy(() => import('./pages/admin/AdminVouchers'));
+const AdminClients      = lazy(() => import('./pages/admin/AdminClients'));
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
             <Route path="cases/edit/:id" element={<AdminCaseEditor />} />
             <Route path="consultants"   element={<AdminConsultants />} />
             <Route path="vouchers"      element={<AdminVouchers />} />
+            <Route path="clients"       element={<AdminClients />} />
           </Route>
         </Routes>
       </Suspense>
