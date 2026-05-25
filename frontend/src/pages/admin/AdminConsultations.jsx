@@ -470,15 +470,28 @@ export default function AdminConsultations() {
                       {/* Voucher */}
                       <td className="px-5 py-4">
                         {item.voucher_code ? (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
-                            style={{ background: 'rgba(124,58,237,0.1)', color: '#6d28d9', border: '1px solid rgba(124,58,237,0.2)' }}
-                          >
-                            🎟️ {item.voucher_code}
-                            {item.discount_percent ? ` (${item.discount_percent}%)` : ''}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span
+                              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold tracking-[0.05em] uppercase w-fit"
+                              style={{ background: 'rgba(109,40,217,0.07)', color: '#6d28d9', border: '1px solid rgba(109,40,217,0.18)', fontFamily: "'Manrope', sans-serif" }}
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+                                <path d="M13 5v2M13 17v2M13 11v2"/>
+                              </svg>
+                              {item.voucher_code}
+                            </span>
+                            {item.discount_percent && (
+                              <span
+                                className="text-[10px] font-semibold pl-0.5"
+                                style={{ color: 'rgba(109,40,217,0.55)', fontFamily: "'Manrope', sans-serif" }}
+                              >
+                                Diskon {item.discount_percent}%
+                              </span>
+                            )}
+                          </div>
                         ) : (
-                          <span className="text-xs" style={{ color: muted }}>-</span>
+                          <span className="text-xs" style={{ color: muted }}>—</span>
                         )}
                       </td>
 
