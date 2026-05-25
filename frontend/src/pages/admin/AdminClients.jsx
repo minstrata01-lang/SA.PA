@@ -6,6 +6,22 @@ const blue   = '#003D6B';
 const muted  = 'rgba(0,61,107,0.5)';
 const border = 'rgba(0,61,107,0.1)';
 
+const JAKARTA_AREAS = ['Jakarta', 'Jakarta Pusat', 'Jakarta Barat', 'Jakarta Timur', 'Jakarta Utara', 'Jakarta Selatan'];
+
+function getLokasiLabel(location) {
+  if (!location) return '-';
+  return JAKARTA_AREAS.some(area => location.toLowerCase().includes(area.toLowerCase()))
+    ? 'Jakarta'
+    : 'Luar Jakarta';
+}
+
+function getLokasiStyle(location) {
+  const label = getLokasiLabel(location);
+  if (label === 'Jakarta')      return { background: 'rgba(0,61,107,0.08)',   color: '#003D6B', border: '1px solid rgba(0,61,107,0.2)' };
+  if (label === 'Luar Jakarta') return { background: 'rgba(232,146,10,0.1)',  color: '#92400e', border: '1px solid rgba(232,146,10,0.25)' };
+  return { background: 'rgba(0,61,107,0.04)', color: 'rgba(0,61,107,0.5)', border: '1px solid rgba(0,61,107,0.1)' };
+}
+
 const pageVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
@@ -195,13 +211,9 @@ export default function AdminClients() {
                         {item.location ? (
                           <span
                             className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                            style={{
-                              background: item.location === 'Jakarta' ? 'rgba(0,61,107,0.08)' : 'rgba(232,146,10,0.1)',
-                              color:      item.location === 'Jakarta' ? blue : '#92400e',
-                              border:     item.location === 'Jakarta' ? '1px solid rgba(0,61,107,0.2)' : '1px solid rgba(232,146,10,0.25)',
-                            }}
+                            style={getLokasiStyle(item.location)}
                           >
-                            {item.location}
+                            {getLokasiLabel(item.location)}
                           </span>
                         ) : (
                           <span className="text-xs" style={{ color: muted }}>-</span>
