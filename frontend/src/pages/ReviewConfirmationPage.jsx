@@ -249,30 +249,93 @@ function ReviewConfirmationPage() {
                 {isValidatingVoucher ? '...' : 'Pakai'}
               </button>
             </div>
-          ) : (
-            <div className="flex items-start justify-between p-4"
-                 style={{ background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.2)' }}>
-              <div>
-                <p className="text-sm font-bold" style={{ color: '#065f46', fontFamily: "'Manrope', sans-serif" }}>
-                  ✓ Voucher {voucherResult.code}
-                </p>
-                <p className="text-xs mt-1" style={{ color: '#065f46', fontFamily: "'Manrope', sans-serif" }}>
-                  Diskon {voucherResult.discount_percent}% = -Rp {voucherResult.discount_amount.toLocaleString('id-ID')}
-                </p>
-                <p className="text-xs font-bold mt-1" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>
-                  Total yang dibayar: Rp {voucherResult.final_amount.toLocaleString('id-ID')}
-                </p>
+          ) : (() => {
+            const originalPrice = voucherResult.discount_amount + voucherResult.final_amount;
+            return (
+              <div style={{ border: '1px solid rgba(5,150,105,0.25)', overflow: 'hidden' }}>
+
+                {/* ── Header: voucher badge ── */}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ background: 'rgba(5,150,105,0.07)', borderBottom: '1px solid rgba(5,150,105,0.15)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: '#059669' }}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold" style={{ color: '#065f46', fontFamily: "'Manrope', sans-serif" }}>
+                        Voucher Berhasil Diterapkan
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+                          <path d="M13 5v2M13 17v2M13 11v2"/>
+                        </svg>
+                        <span
+                          className="text-[11px] font-bold tracking-[0.08em] uppercase"
+                          style={{ color: '#059669', fontFamily: "'Manrope', sans-serif" }}
+                        >
+                          {voucherResult.code}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveVoucher}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', lineHeight: 0 }}
+                    title="Hapus voucher"
+                    aria-label="Hapus voucher"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(6,95,70,0.45)" strokeWidth="2.2" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+
+                {/* ── Body: price breakdown ── */}
+                <div className="px-4 py-4" style={{ background: 'white' }}>
+                  {/* Harga normal */}
+                  <div className="flex items-center justify-between py-2" style={{ borderBottom: '1px dashed rgba(0,61,107,0.1)' }}>
+                    <span className="text-xs" style={{ color: muted, fontFamily: "'Manrope', sans-serif" }}>Harga Normal</span>
+                    <span className="text-xs" style={{ color: blue, fontFamily: "'Manrope', sans-serif" }}>
+                      Rp {originalPrice.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  {/* Diskon */}
+                  <div className="flex items-center justify-between py-2" style={{ borderBottom: '1px dashed rgba(0,61,107,0.1)' }}>
+                    <span className="text-xs" style={{ color: '#059669', fontFamily: "'Manrope', sans-serif" }}>
+                      Diskon Voucher ({voucherResult.discount_percent}%)
+                    </span>
+                    <span className="text-xs font-semibold" style={{ color: '#059669', fontFamily: "'Manrope', sans-serif" }}>
+                      −Rp {voucherResult.discount_amount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  {/* Total */}
+                  <div className="flex items-center justify-between pt-3 mt-1">
+                    <span
+                      className="text-sm font-bold uppercase tracking-wide"
+                      style={{ color: blue, fontFamily: "'Manrope', sans-serif", letterSpacing: '0.04em' }}
+                    >
+                      Total Pembayaran
+                    </span>
+                    <span
+                      className="font-bold leading-none"
+                      style={{ color: blue, fontFamily: "'Poppins', sans-serif", fontSize: 'clamp(1.35rem, 3vw, 1.75rem)', letterSpacing: '-0.02em' }}
+                    >
+                      Rp {voucherResult.final_amount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={handleRemoveVoucher}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: muted, fontSize: 18, padding: '2px 6px' }}
-                title="Hapus voucher"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+            );
+          })()}
 
           {voucherError && (
             <p className="mt-2 text-xs font-medium" style={{ color: '#ef4444', fontFamily: "'Manrope', sans-serif" }}>
