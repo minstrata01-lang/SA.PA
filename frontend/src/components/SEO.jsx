@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
-const BASE_URL = 'https://sapa.stratalift.co.id';
+const BASE_URL = 'https://sapa.services';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const DEFAULT_DESC = 'SA.PA menyediakan layanan pre-assessment, diagnosis struktural, dan investigasi geoteknik bangunan secara profesional. Tim bersertifikat, respon cepat, mulai Rp500.000.';
 
