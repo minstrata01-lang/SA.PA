@@ -5,7 +5,7 @@ import OrangeButtonArrow from "./Button/OrangeButtonArrow";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 const border = "rgba(0,61,107,0.12)";
 
 const navLinks = [

@@ -316,21 +316,33 @@ export default function Team() {
                         {/* Dots */}
                         {!loading && (
                             <div className="flex items-center gap-1.5 shrink-0">
-                                {consultants.map((_, i) => (
+                                {consultants.map((c, i) => (
                                     <button
                                         key={i}
                                         onClick={() => goTo(i)}
+                                        aria-label={`Tampilkan konsultan ${c.name || i + 1}`}
                                         style={{
+                                            width: activeIdx === i ? 20 : 5,
+                                            height: 20,
+                                            minWidth: 20,
+                                            borderRadius: 3,
+                                            background: "transparent",
+                                            border: "none",
+                                            cursor: "pointer",
+                                            padding: "7.5px 0",
+                                            display: "flex",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <span style={{
+                                            display: "block",
                                             width: activeIdx === i ? 20 : 5,
                                             height: 5,
                                             borderRadius: 3,
                                             background: activeIdx === i ? orange : "rgba(255,255,255,0.2)",
                                             transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            padding: 0,
-                                        }}
-                                    />
+                                        }} />
+                                    </button>
                                 ))}
                             </div>
                         )}

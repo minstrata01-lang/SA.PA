@@ -10,7 +10,7 @@ const slugify = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-
 
 const blue   = "#003D6B";
 const orange = "#D97706";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 const GAP    = 12; // px gap between slides
 
 
@@ -135,10 +135,11 @@ export default function Tools() {
                             {pad(activeIdx + 1)}&thinsp;
                         </span>
                         <div className="flex items-center gap-2">
-                            {[{ fn: prev, dir: "left", d: "M10 3L5 8l5 5" }, { fn: next, dir: "right", d: "M6 3l5 5-5 5" }].map(({ fn, dir, d }) => (
+                            {[{ fn: prev, dir: "left", label: "Peralatan sebelumnya", d: "M10 3L5 8l5 5" }, { fn: next, dir: "right", label: "Peralatan berikutnya", d: "M6 3l5 5-5 5" }].map(({ fn, dir, label, d }) => (
                                 <button
                                     key={dir}
                                     onClick={fn}
+                                    aria-label={label}
                                     className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200"
                                     style={{ border: "1.5px solid rgba(0,61,107,0.2)", color: blue }}
                                     onMouseEnter={e => { e.currentTarget.style.background = blue; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = blue; }}

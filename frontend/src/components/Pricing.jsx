@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 const faint  = "rgba(0,61,107,0.06)";
 const border = "rgba(0,61,107,0.1)";
 

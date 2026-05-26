@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 const rule   = "rgba(0,61,107,0.1)";
 
 const CATEGORIES = [
@@ -76,8 +76,14 @@ function ConsultationNeedsStep({ formData, onChange, onBack, onSubmit, isSubmitt
                 return (
                   <span key={id} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ background: orange }}>
                     {cat?.label}
-                    <button type="button" onClick={() => removeCategory(id)} className="inline-flex items-center justify-center" style={{ background: "rgba(255,255,255,0.25)", borderRadius: "50%", width: 14, height: 14, border: "none", cursor: "pointer" }}>
-                      <svg viewBox="0 0 24 24" className="w-2 h-2" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    <button
+                      type="button"
+                      onClick={() => removeCategory(id)}
+                      aria-label={`Hapus kategori ${cat?.label}`}
+                      className="inline-flex items-center justify-center"
+                      style={{ background: "rgba(255,255,255,0.25)", borderRadius: "50%", width: 20, height: 20, minWidth: 20, border: "none", cursor: "pointer", padding: 0 }}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
                     </button>
                   </span>
                 );

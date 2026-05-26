@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 const rule   = "rgba(0,61,107,0.1)";
 const EASE   = [0.22, 1, 0.36, 1];
 

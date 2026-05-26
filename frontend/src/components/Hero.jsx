@@ -34,7 +34,7 @@ const SLIDES = [
 
 const blue   = "#003D6B";
 const orange = "#E8920A";
-const muted  = "rgba(0,61,107,0.5)";
+const muted  = "rgba(0,61,107,0.72)";
 
 const issues = ["Penurunan Lantai", "Keretakan Dinding", "Masalah Pondasi"];
 const trust  = ["Respon cepat", "Tim bersertifikat", "Sesuai Standar dan Peraturan yang Berlaku"];
