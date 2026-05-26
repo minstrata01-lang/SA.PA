@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTools } from "../hooks/useTools";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
 import OptimizedImage from "../components/OptimizedImage";
 import SEO from "../components/SEO";
 
@@ -136,6 +137,7 @@ function ToolCard({ tool, index }) {
 
 export default function NewTools() {
     const { data: allTools, loading, error } = useTools();
+    useRegisterLoading('tools', loading);
 
     if (loading) {
         return (

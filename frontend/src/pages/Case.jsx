@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import CardCase from "../components/Card/CardCase";
 import Pagination from "../components/ui/Pagination";
 import { useCases } from "../hooks/useCases";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
 import SEO from "../components/SEO";
 
 const blue   = "#003D6B";
@@ -21,6 +22,7 @@ function Case() {
     const currentPage = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
 
     const { data: cases, totalCount, loading, error } = useCases({ page: currentPage, pageSize: PAGE_SIZE });
+    useRegisterLoading('cases', loading);
 
     const handlePageChange = (page) => {
         setSearchParams({ page: String(page) });

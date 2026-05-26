@@ -6,6 +6,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import { supabase } from "../supabaseClient";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
+import { useImagePreload } from "../hooks/useImagePreload";
 import { CustomImage } from "../lib/tiptap/CustomImage";
 import { PageBreak } from "../lib/tiptap/PageBreak";
 import { ToolLink } from "../lib/tiptap/ToolLink";
@@ -51,6 +53,8 @@ function CaseDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [caseItem, setCaseItem] = useState(null);
   const [loading, setLoading]   = useState(true);
+  useRegisterLoading('case-detail', loading);
+  useImagePreload('case-image', caseItem?.cover_image_url, !loading);
 
   // Segments derived from full_description
   const [segments, setSegments] = useState([]);

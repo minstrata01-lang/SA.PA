@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "../supabaseClient";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
+import { useImagePreload } from "../hooks/useImagePreload";
 import OptimizedImage from "../components/OptimizedImage";
 
 const blue   = "#003D6B";
@@ -22,6 +24,8 @@ export default function ToolDetail() {
     const { slug } = useParams();
     const [tool, setTool]       = useState(null);
     const [loading, setLoading] = useState(true);
+    useRegisterLoading('tool-detail', loading);
+    useImagePreload('tool-image', tool?.thumbnail_url, !loading);
 
     useEffect(() => {
         const toSlug = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
