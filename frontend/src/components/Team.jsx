@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import CardConsultant from "./Card/CardConsultant";
 import { useConsultants } from "../hooks/useConsultants";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
 
 const navy    = "#001C38";
 const orange  = "#D97706";
@@ -11,6 +12,7 @@ const CYCLE_MS = 3200;
 
 export default function Team() {
     const { data: consultants, loading } = useConsultants();
+    useRegisterLoading('consultants', loading);
     const n = consultants.length;
 
     // Render cards 3× so we can silently jump within the middle set

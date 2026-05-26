@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import OptimizedImage from "./OptimizedImage";
 import { useCases } from "../hooks/useCases";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
 
 const blue   = "#003D6B";
 const orange = "#D97706";
@@ -111,7 +112,8 @@ function CaseCard({ to, img, title, description, featured = false }) {
 }
 
 export default function Questions() {
-    const { data: cases } = useCases();
+    const { data: cases, loading: casesLoading } = useCases();
+    useRegisterLoading('cases', casesLoading);
     const featured = cases.slice(0, 4);
 
     return (

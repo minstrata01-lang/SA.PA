@@ -1,4 +1,5 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useImagePreload } from "../hooks/useImagePreload";
 import { useEffect, useState, useCallback, useRef } from "react";
 import OrangeButtonArrow from "./Button/OrangeButtonArrow";
 
@@ -49,6 +50,8 @@ const fadeUp = (delay) => ({
 
 export default function Hero() {
     const prefersReduced = useReducedMotion();
+    // Preload gambar pertama hero (above the fold)
+    useImagePreload('hero-image', gambar1);
 
     const slidesCount = SLIDES.length;
 

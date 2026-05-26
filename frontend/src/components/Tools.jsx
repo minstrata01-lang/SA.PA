@@ -5,6 +5,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 const MotionLink = motion(Link);
 import OptimizedImage from "./OptimizedImage";
 import { useTools } from "../hooks/useTools";
+import { useRegisterLoading } from "../hooks/useRegisterLoading";
 
 const slugify = str => str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
@@ -20,6 +21,7 @@ const AUTO_MS  = 3500; // auto-advance interval
 
 export default function Tools() {
     const { data: tools, loading } = useTools();
+    useRegisterLoading('tools', loading);
     const [activeIdx, setActiveIdx] = useState(0);
     const [containerW, setContainerW] = useState(0);
     const [paused, setPaused]         = useState(false);
