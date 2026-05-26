@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import SEO from '../components/SEO';
 
 const blue    = "#003D6B";
 const orange  = "#D97706";
@@ -107,6 +108,11 @@ export default function Pricing() {
 
   return (
     <div className="bg-white overflow-x-hidden">
+      <SEO
+        title="Harga Layanan Pre-Assessment & Investigasi Struktural"
+        description="Lihat paket harga layanan konsultasi struktural SA.PA mulai Rp500.000. Pre-assessment, diagnosis, dan investigasi geoteknik oleh tim bersertifikat."
+        canonical="/pricing"
+      />
 
       {/* ── Hero ── */}
       <section className="pt-28 pb-0 px-4 sm:px-6 md:px-8">
