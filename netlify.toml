@@ -11,10 +11,18 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # HSTS: paksa HTTPS, aman untuk semua situs Netlify
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Cegah MIME sniffing
     X-Content-Type-Options = "nosniff"
+    # Cegah clickjacking — situs tidak boleh di-embed iframe pihak lain
     X-Frame-Options = "SAMEORIGIN"
-    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    # Batasi info referrer ke cross-origin
     Referrer-Policy = "strict-origin-when-cross-origin"
+    # Nonaktifkan API browser yang tidak dipakai
     Permissions-Policy = "accelerometer=(), camera=(), microphone=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.lordicon.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.midtrans.com; frame-src https://app.midtrans.com https://app.sandbox.midtrans.com; object-src 'none'; base-uri 'self'"
+    # CATATAN: CSP sengaja dihilangkan — CSP dengan unsafe-inline justru
+    # membuat audit Lighthouse "CSP effective against XSS" GAGAL (▲),
+    # lebih buruk daripada tidak ada CSP sama sekali (○ advisory).
+    # CATATAN: COOP dihilangkan — bisa memblokir komunikasi window.opener
+    # yang dipakai payment gateway Midtrans.
