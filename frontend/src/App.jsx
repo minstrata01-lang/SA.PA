@@ -1,11 +1,12 @@
 // frontend/src/App.jsx
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from './components/Layout';
 import FullscreenLoader from './components/FullscreenLoader';
 import AdminLayout from './layouts/AdminLayout';
 import AdminLoginPage from './pages/AdminLoginPage';
+import { PageLoaderProvider, usePageLoader } from './context/PageLoaderContext';
 
 // Public pages
 const Home                   = lazy(() => import('./pages/Home'));
@@ -38,54 +39,73 @@ const AdminConsultants   = lazy(() => import('./pages/admin/AdminConsultants'));
 const AdminVouchers     = lazy(() => import('./pages/admin/AdminVouchers'));
 const AdminClients      = lazy(() => import('./pages/admin/AdminClients'));
 
+function RouteChangeResetter() {
+  const location = useLocation();
+  const { reset } = usePageLoader();
+
+  // Reset saat pertama kali mount (initial load)
+  useEffect(() => { reset(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset setiap route berubah
+  useEffect(() => { reset(); }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <Suspense fallback={<FullscreenLoader />}>
-        <Routes>
-          {/* Public routes */}
-          <Route element={<Layout />}>
-            <Route path="/"                                   element={<Home />} />
-            <Route path="/tool"                               element={<NewTools />} />
-            <Route path="/tool/:slug"                         element={<ToolDetail />} />
-            <Route path="/case"                               element={<Case />} />
-            <Route path="/case/:slug"                         element={<CaseDetail />} />
-            <Route path="/layanan"                            element={<LayananPage />} />
-            <Route path="/preassessment"                      element={<PreassessmentPage />} />
-            <Route path="/preassessment/form"                 element={<PreassessmentFormPage />} />
-            <Route path="/preassessment/review-confirmation"  element={<ReviewConfirmationPage />} />
-            <Route path="/waiting"                            element={<WaitingPage />} />
-            <Route path="/payment/success"                    element={<PaymentSuccessPage />} />
-            <Route path="/payment/failed"                     element={<PaymentFailedPage />} />
-            <Route path="/payment/pending"                    element={<PaymentPendingPage />} />
-            <Route path="/payment/upload"                     element={<PaymentUploadPage />} />
-            <Route path="/payment-error"                      element={<PaymentFailedPage />} />
-            <Route path="/session-used"                       element={<SessionUsedPage />} />
-            <Route path="/session-pending"                    element={<SessionPendingPage />} />
-            <Route path="/session-expired"                    element={<SessionExpiredPage />} />
-            <Route path="/session-invalid"                    element={<SessionInvalidPage />} />
-            <Route path="/join"                               element={<JoinPage />} />
-            <Route path="/pricing"                            element={<Pricing />} />
-          </Route>
+      <PageLoaderProvider>
+        <RouteChangeResetter />
+        <ScrollToTop />
+        {/* fallback={null} karena FullscreenLoader di luar sudah cover */}
+        <Suspense fallback={null}>
+          <Routes>
+            {/* Public routes */}
+            <Route element={<Layout />}>
+              <Route path="/"                                   element={<Home />} />
+              <Route path="/tool"                               element={<NewTools />} />
+              <Route path="/tool/:slug"                         element={<ToolDetail />} />
+              <Route path="/case"                               element={<Case />} />
+              <Route path="/case/:slug"                         element={<CaseDetail />} />
+              <Route path="/layanan"                            element={<LayananPage />} />
+              <Route path="/preassessment"                      element={<PreassessmentPage />} />
+              <Route path="/preassessment/form"                 element={<PreassessmentFormPage />} />
+              <Route path="/preassessment/review-confirmation"  element={<ReviewConfirmationPage />} />
+              <Route path="/waiting"                            element={<WaitingPage />} />
+              <Route path="/payment/success"                    element={<PaymentSuccessPage />} />
+              <Route path="/payment/failed"                     element={<PaymentFailedPage />} />
+              <Route path="/payment/pending"                    element={<PaymentPendingPage />} />
+              <Route path="/payment/upload"                     element={<PaymentUploadPage />} />
+              <Route path="/payment-error"                      element={<PaymentFailedPage />} />
+              <Route path="/session-used"                       element={<SessionUsedPage />} />
+              <Route path="/session-pending"                    element={<SessionPendingPage />} />
+              <Route path="/session-expired"                    element={<SessionExpiredPage />} />
+              <Route path="/session-invalid"                    element={<SessionInvalidPage />} />
+              <Route path="/join"                               element={<JoinPage />} />
+              <Route path="/pricing"                            element={<Pricing />} />
+            </Route>
 
-          {/* Admin login (outside AdminLayout) */}
-          <Route path="/admin-login" element={<AdminLoginPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+            {/* Admin login (outside AdminLayout) */}
+            <Route path="/admin-login" element={<AdminLoginPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
 
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/consultations" replace />} />
-            <Route path="consultations" element={<AdminConsultations />} />
-            <Route path="tools"         element={<AdminTools />} />
-            <Route path="cases"         element={<AdminCases />} />
-            <Route path="cases/edit/:id" element={<AdminCaseEditor />} />
-            <Route path="consultants"   element={<AdminConsultants />} />
-            <Route path="vouchers"      element={<AdminVouchers />} />
-            <Route path="clients"       element={<AdminClients />} />
-          </Route>
-        </Routes>
-      </Suspense>
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/admin/consultations" replace />} />
+              <Route path="consultations" element={<AdminConsultations />} />
+              <Route path="tools"         element={<AdminTools />} />
+              <Route path="cases"         element={<AdminCases />} />
+              <Route path="cases/edit/:id" element={<AdminCaseEditor />} />
+              <Route path="consultants"   element={<AdminConsultants />} />
+              <Route path="vouchers"      element={<AdminVouchers />} />
+              <Route path="clients"       element={<AdminClients />} />
+            </Route>
+          </Routes>
+        </Suspense>
+        {/* FullscreenLoader di luar Suspense — dikontrol PageLoaderContext */}
+        <FullscreenLoader />
+      </PageLoaderProvider>
     </BrowserRouter>
   );
 }
