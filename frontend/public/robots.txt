@@ -14,4 +14,4 @@ Disallow: /session-pending
 Disallow: /session-expired
 Disallow: /session-invalid
 
-Sitemap: https://sapa.stratalift.co.id/sitemap.xml
+Sitemap: https://sapa.services/sitemap.xml
