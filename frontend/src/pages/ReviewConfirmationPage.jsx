@@ -54,7 +54,7 @@ function ReviewConfirmationPage() {
   const handleContactAdmin = () => {
     const name = encodeURIComponent(reviewData.name || reviewData.fullName || "");
     const city = encodeURIComponent(reviewData.location || "");
-    const waUrl = `https://wa.me/62881010512829?text=Hallo+admin%2C+saya+${name}+dari+luar+Jakarta+ingin+melakukan+konsultasi+mengenai+masalah+bangunan+saya`;
+    const waUrl = `https://wa.me/${import.meta.env.VITE_ADMIN_WA_NUMBER}?text=Hallo+admin%2C+saya+${name}+dari+luar+Jakarta+ingin+melakukan+konsultasi+mengenai+masalah+bangunan+saya`;
     window.open(waUrl, "_blank");
     setShowOutsidePopup(false);
   };

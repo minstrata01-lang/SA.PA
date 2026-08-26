@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+// .env.local dulu (secrets, gitignored), lalu .env — nilai pertama menang.
+dotenv.config({ path: ['.env.local', '.env'] });
 
 const config = {
   port: process.env.PORT || 3001,

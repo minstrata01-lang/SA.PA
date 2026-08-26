@@ -184,7 +184,7 @@ export default function Pricing() {
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://wa.me/628118850500"
+                  href={`https://wa.me/${import.meta.env.VITE_ADMIN_WA_NUMBER}`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center rounded-full font-semibold"

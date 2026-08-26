@@ -40,7 +40,7 @@ const SOCIAL_LINKS = [
 const CONTACT_ITEMS = [
     { Icon: Mail,   text: "contact@stratalift.co.id", href: "mailto:contact@stratalift.co.id" },
     { Icon: MapPin, text: "Jakarta Timur, Indonesia",  href: "https://maps.app.goo.gl/me7SiBxTbuyrM3Hg9" },
-    { Icon: Phone,  text: "+62 881-0105-12829",   href: "https://wa.me/62881010512829" },
+    { Icon: Phone,  text: "+62 822-4551-5021",   href: `https://wa.me/${import.meta.env.VITE_ADMIN_WA_NUMBER}` },
 ];
 
 /* ── Animation variants ── */

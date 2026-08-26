@@ -101,7 +101,7 @@ export async function generateInvoicePDF(params: InvoiceParams): Promise<Uint8Ar
   })
   const coLines = [
     'Jl. Condet Raya No. 27, Jakarta Timur',
-    'WA: 62881010512829',
+    'WA: 6282245515021',
     'contact@stratalift.co.id',
   ]
   coLines.forEach((line, i) => {
