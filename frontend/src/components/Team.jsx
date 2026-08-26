@@ -315,25 +315,27 @@ export default function Team() {
                             )}
                         </div>
 
-                        {/* Dots */}
+                        {/* Number indicators */}
                         {!loading && (
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="flex items-center gap-3 shrink-0">
                                 {consultants.map((c, i) => (
                                     <button
                                         key={i}
                                         onClick={() => goTo(i)}
                                         aria-label={`Tampilkan konsultan ${c.name || i + 1}`}
+                                        className="font-bold-hero tabular-nums transition-colors duration-300"
                                         style={{
-                                            width: activeIdx === i ? 20 : 5,
-                                            height: 5,
-                                            borderRadius: 3,
-                                            background: activeIdx === i ? orange : "rgba(255,255,255,0.2)",
-                                            transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
+                                            fontSize: "0.75rem",
+                                            letterSpacing: "0.05em",
+                                            color: activeIdx === i ? orange : "rgba(255,255,255,0.3)",
                                             border: "none",
+                                            background: "transparent",
                                             cursor: "pointer",
                                             padding: 0,
                                         }}
-                                    />
+                                    >
+                                        {String(i + 1).padStart(2, "0")}
+                                    </button>
                                 ))}
                             </div>
                         )}
